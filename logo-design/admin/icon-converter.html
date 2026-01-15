@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Icon Converter - iOS & Android</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: rgba(255,255,255,0.95);
+            font-size: 1.1em;
+            margin-bottom: 30px;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .controls-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+            position: sticky;
+            top: 20px;
+        }
+        
+        .controls-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .controls-panel::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .controls-panel::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+        
+        .controls-panel::-webkit-scrollbar-thumb:hover {
+            background: #5568d3;
+        }
+
+        .preview-area {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f0f0ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #43e97b;
+            background: #e8ffe8;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .upload-subtext {
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .preview-item {
+            text-align: center;
+        }
+
+        .preview-item {
+            text-align: center;
+        }
+
+        .preview-item h3 {
+            color: #555;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .icon-wrapper {
+            background: #f5f5f5;
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .section-title {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .platform-tabs {
+            display: flex;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 20px;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 12px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: #666;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .tab-button.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .export-btn-android {
+            background: linear-gradient(135deg, #43e97b, #38f9d7);
+        }
+
+        .export-btn-ios {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .current-image {
+            max-width: 100%;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .image-info {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .info-label {
+            font-weight: 600;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            padding: 0;
+        }
+
+        .range-value {
+            display: inline-block;
+            margin-left: 10px;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .control-group input[type="color"] {
+            width: 100%;
+            height: 40px;
+            padding: 2px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .control-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .size-info {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 15px;
+            font-size: 0.85em;
+            color: #856404;
+        }
+
+        .remove-bg-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .remove-bg-modal.active {
+            display: flex;
+        }
+
+        .remove-bg-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow: auto;
+        }
+
+        .remove-bg-canvas-wrapper {
+            position: relative;
+            margin: 20px 0;
+            overflow: hidden;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f5f5f5;
+            max-height: 65vh;
+        }
+
+        .canvas-container {
+            overflow: auto;
+            max-height: 60vh;
+            position: relative;
+        }
+
+        #removeBgCanvas {
+            display: block;
+            cursor: crosshair;
+            transform-origin: top left;
+        }
+
+        .zoom-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 10px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .zoom-btn {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
+            transition: all 0.2s;
+        }
+
+        .zoom-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.6);
+        }
+
+        .zoom-btn:active {
+            transform: scale(0.95);
+        }
+
+        .zoom-level {
+            background: linear-gradient(135deg, #43e97b, #38f9d7);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(67, 233, 123, 0.4);
+        }
+
+        .remove-bg-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .remove-bg-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .remove-bg-buttons button {
+            flex: 1;
+            margin: 0;
+        }
+
+        .tolerance-control {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .edge-smoothing-control {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .instruction-text {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            color: #856404;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Icon Converter</h1>
+        <p class="subtitle">Convert images to iOS & Android app icons</p>
+
+        <div class="main-layout">
+            <!-- Controls Panel -->
+            <div class="controls-panel">
+                <div class="section-title">📤 Upload Image</div>
+                
+                <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">Click to upload or drag & drop</div>
+                    <div class="upload-subtext">PNG, JPG, SVG (Recommended: 1024x1024px)</div>
+                </div>
+                <input type="file" id="fileInput" accept="image/*">
+
+                <div id="imagePreviewSection" style="display: none; margin-top: 20px;">
+                    <img id="currentImage" class="current-image" alt="Current image">
+                    <div class="image-info">
+                        <div class="info-row">
+                            <span class="info-label">Size:</span>
+                            <span id="imageSize">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Dimensions:</span>
+                            <span id="imageDimensions">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Format:</span>
+                            <span id="imageFormat">-</span>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                        <button style="background: linear-gradient(135deg, #43e97b, #38f9d7);" onclick="openRemoveBgModal()">
+                            🎨 Remove BG
+                        </button>
+                        <button onclick="document.getElementById('fileInput').click()">
+                            🔄 Change Image
+                        </button>
+                    </div>
+                </div>
+
+                <div class="section-title" style="margin-top: 30px;">⚙️ Settings</div>
+
+                <div class="control-group">
+                    <label>Background Color:</label>
+                    <input type="color" id="bgColor" value="#ffffff">
+                </div>
+
+                <div class="control-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="transparentBg" checked>
+                        <label for="transparentBg" style="margin: 0;">Transparent Background</label>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Corner Radius: <span class="range-value" id="cornerRadiusValue">0</span>%</label>
+                    <input type="range" id="cornerRadius" min="0" max="50" value="0" step="1">
+                </div>
+
+                <div class="control-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="applyRadiusToAndroid" checked>
+                        <label for="applyRadiusToAndroid" style="margin: 0;">Apply Corner Radius to Android</label>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Padding: <span class="range-value" id="paddingValue">0</span>px</label>
+                    <input type="range" id="padding" min="0" max="100" value="0" step="5">
+                </div>
+
+                <div class="control-group">
+                    <label>Image Fit:</label>
+                    <select id="imageFit">
+                        <option value="contain">Contain (fit inside)</option>
+                        <option value="cover">Cover (fill completely)</option>
+                        <option value="fill">Fill (stretch to fit)</option>
+                    </select>
+                </div>
+
+                <div class="size-info">
+                    <strong>💡 Tip:</strong> For best results, use a square image with minimum 1024x1024px resolution.
+                </div>
+            </div>
+
+            <!-- Preview Area -->
+            <div class="preview-area">
+                <h2 style="color: #333; margin-bottom: 20px;">📱 Icon Previews</h2>
+
+                <!-- Platform Tabs -->
+                <div class="platform-tabs">
+                    <button id="iosTab" class="tab-button active" onclick="switchTab('ios')">
+                        🍎 iOS
+                    </button>
+                    <button id="androidTab" class="tab-button" onclick="switchTab('android')">
+                        🤖 Android
+                    </button>
+                </div>
+
+                <!-- iOS Tab Content -->
+                <div id="iosContent" class="tab-content active">
+                    <div style="padding: 20px; background: #f8f9fa; border-radius: 12px; border: 2px dashed #ff6b95; margin-bottom: 20px;">
+                        <h3 style="color: #ff6b95; margin-bottom: 15px;">🍎 iOS Preview Icons</h3>
+                        <p style="color: #666; font-size: 0.9em; margin-bottom: 15px;">Preview các kích thước icon cho iPhone và iPad</p>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="color: #ff6b95; margin-bottom: 10px; font-size: 14px;">📱 iPhone Icons</h4>
+                            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;" id="iosIphoneGrid">
+                                <!-- iPhone icons will be generated here -->
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="color: #ff6b95; margin-bottom: 10px; font-size: 14px;">📱 iPad Icons</h4>
+                            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;" id="iosIpadGrid">
+                                <!-- iPad icons will be generated here -->
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 style="color: #ff6b95; margin-bottom: 10px; font-size: 14px;">🏪 App Store</h4>
+                            <div style="display: flex; justify-content: center;" id="iosAppStoreGrid">
+                                <!-- App Store icon will be generated here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button id="exportIosBtn" class="export-btn-ios" onclick="exportIosIcons()" disabled>
+                        📦 Download iOS Icon Package
+                    </button>
+                </div>
+
+                <!-- Android Tab Content -->
+                <div id="androidContent" class="tab-content">
+                    <div style="padding: 20px; background: #f8f9fa; border-radius: 12px; border: 2px dashed #43e97b; margin-bottom: 20px;">
+                        <h3 style="color: #43e97b; margin-bottom: 15px;">🤖 Android Preview Icons</h3>
+                        <p style="color: #666; font-size: 0.9em; margin-bottom: 15px;">Preview các kích thước icon cho Android</p>
+                        
+                        <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;" id="androidPreviewGrid">
+                            <!-- Android icons will be generated here -->
+                        </div>
+                    </div>
+                    
+                    <button id="exportAndroidBtn" class="export-btn-android" onclick="exportAndroidIcons()" disabled>
+                        📦 Download Android Icon Package
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Remove Background Modal -->
+    <div id="removeBgModal" class="remove-bg-modal">
+        <div class="remove-bg-container">
+            <h2 style="color: #333; margin-bottom: 15px;">🎨 Remove Background</h2>
+            
+            <div class="instruction-text">
+                <strong>📌 Instructions:</strong><br>
+                1. Use zoom buttons to zoom in/out for precise color selection<br>
+                2. Click on the color you want to remove<br>
+                3. Adjust tolerance and edge smoothing for best results<br>
+                4. Click Apply to save changes
+            </div>
+
+            <div class="remove-bg-canvas-wrapper">
+                <div class="zoom-controls">
+                    <button class="zoom-btn" onclick="zoomIn()" title="Zoom In">+</button>
+                    <div class="zoom-level" id="zoomLevel">100%</div>
+                    <button class="zoom-btn" onclick="zoomOut()" title="Zoom Out">−</button>
+                    <button class="zoom-btn" onclick="resetZoom()" title="Reset Zoom">⟲</button>
+                </div>
+                <div class="canvas-container" id="canvasContainer">
+                    <canvas id="removeBgCanvas"></canvas>
+                </div>
+            </div>
+
+            <div class="remove-bg-controls">
+                <div class="tolerance-control">
+                    <label style="font-weight: 600; color: #333;">
+                        Tolerance: <span class="range-value" id="toleranceValue">30</span>
+                    </label>
+                    <input type="range" id="toleranceRange" min="0" max="100" value="30" step="1" style="width: 100%; margin-top: 8px;">
+                    <div style="font-size: 0.85em; color: #666; margin-top: 5px;">
+                        Higher values remove more similar colors
+                    </div>
+                </div>
+
+                <div class="edge-smoothing-control">
+                    <label style="font-weight: 600; color: #333;">
+                        Edge Smoothing: <span class="range-value" id="edgeSmoothingValue">2</span>px
+                    </label>
+                    <input type="range" id="edgeSmoothingRange" min="0" max="10" value="2" step="1" style="width: 100%; margin-top: 8px;">
+                    <div style="font-size: 0.85em; color: #666; margin-top: 5px;">
+                        Smooths edges to reduce jagged pixels and improve quality
+                    </div>
+                </div>
+
+                <div class="edge-smoothing-control" style="background: #fff3cd;">
+                    <label style="font-weight: 600; color: #333;">
+                        Border Cleanup: <span class="range-value" id="borderCleanupValue">1</span>px
+                    </label>
+                    <input type="range" id="borderCleanupRange" min="0" max="5" value="1" step="1" style="width: 100%; margin-top: 8px;">
+                    <div style="font-size: 0.85em; color: #666; margin-top: 5px;">
+                        Removes thin border artifacts around removed areas
+                    </div>
+                </div>
+
+                <div class="remove-bg-buttons">
+                    <button onclick="applyRemoveBackground()" style="width: auto; background: linear-gradient(135deg, #43e97b, #38f9d7);">
+                        ✅ Apply Changes
+                    </button>
+                    <button onclick="resetRemoveBackground()" style="width: auto; background: linear-gradient(135deg, #ffc107, #ff9800);">
+                        🔄 Reset
+                    </button>
+                    <button onclick="closeRemoveBgModal()" style="width: auto; background: linear-gradient(135deg, #f093fb, #f5576c);">
+                        ❌ Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Icon sizes for each platform - Match logo-designer exactly (8 icons)
+        const iosSizes = [
+            // iPhone Icons - 4 items (display sizes: 60, 48, 40, 29 px)
+            { size: 180, name: '60pt @3x', filename: 'icon-180.png', category: 'iphone', displaySize: 60 },
+            { size: 120, name: '60pt @2x', filename: 'icon-120.png', category: 'iphone', displaySize: 48 },
+            { size: 120, name: '40pt @3x', filename: 'icon-120-alt.png', category: 'iphone', displaySize: 40 },
+            { size: 87, name: '29pt @3x', filename: 'icon-87.png', category: 'iphone', displaySize: 29 },
+            // iPad Icons - 3 items (display sizes: 60, 48, 55 px)
+            { size: 152, name: '76pt @2x', filename: 'icon-152.png', category: 'ipad', displaySize: 60 },
+            { size: 76, name: '76pt @1x', filename: 'icon-76.png', category: 'ipad', displaySize: 48 },
+            { size: 167, name: '83.5pt @2x', filename: 'icon-167.png', category: 'ipad', displaySize: 55 },
+            // App Store - 1 item (display size: 80 px)
+            { size: 1024, name: '1024x1024', filename: 'icon-1024.png', category: 'appstore', displaySize: 80 }
+        ];
+
+        const androidSizes = [
+            // Main preview sizes (display only 4 key sizes like logo-designer)
+            { size: 512, name: '512×512', filename: 'ic_launcher-512.png', folder: 'playstore', displaySize: 80, preview: true },
+            { size: 192, name: '192×192', filename: 'ic_launcher.png', folder: 'mipmap-xxxhdpi', displaySize: 96, preview: true },
+            { size: 144, name: '144×144', filename: 'ic_launcher.png', folder: 'mipmap-xxhdpi', displaySize: 72, preview: false },
+            { size: 96, name: '96×96', filename: 'ic_launcher.png', folder: 'mipmap-xhdpi', displaySize: 48, preview: true },
+            { size: 72, name: '72×72', filename: 'ic_launcher.png', folder: 'mipmap-hdpi', displaySize: 36, preview: false },
+            { size: 48, name: '48×48', filename: 'ic_launcher.png', folder: 'mipmap-mdpi', displaySize: 24, preview: true }
+        ];
+
+        let currentImage = null;
+        let canvases = {};
+        let removeBgCanvas = null;
+        let removeBgCtx = null;
+        let removeBgImageData = null;
+        let originalImageData = null;
+        let selectedColor = null;
+        let zoomLevel = 1;
+        let isPanning = false;
+        let startPanX = 0;
+        let startPanY = 0;
+        let scrollLeft = 0;
+        let scrollTop = 0;
+
+        // Upload area drag & drop
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                loadImage(file);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                loadImage(file);
+            }
+        });
+
+        function loadImage(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    currentImage = img;
+                    
+                    // Update image info
+                    document.getElementById('imageSize').textContent = formatFileSize(file.size);
+                    document.getElementById('imageDimensions').textContent = `${img.width} × ${img.height}`;
+                    document.getElementById('imageFormat').textContent = file.type.split('/')[1].toUpperCase();
+                    document.getElementById('currentImage').src = e.target.result;
+                    document.getElementById('imagePreviewSection').style.display = 'block';
+                    
+                    // Generate previews
+                    generatePreviews();
+                    
+                    // Enable export buttons
+                    document.getElementById('exportIosBtn').disabled = false;
+                    document.getElementById('exportAndroidBtn').disabled = false;
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        function generatePreviews() {
+            if (!currentImage) return;
+            
+            // Generate iOS previews - separate by device type
+            const iosIphoneGrid = document.getElementById('iosIphoneGrid');
+            const iosIpadGrid = document.getElementById('iosIpadGrid');
+            const iosAppStoreGrid = document.getElementById('iosAppStoreGrid');
+            
+            iosIphoneGrid.innerHTML = '';
+            iosIpadGrid.innerHTML = '';
+            iosAppStoreGrid.innerHTML = '';
+            canvases.ios = {};
+            
+            iosSizes.forEach(config => {
+                const previewItem = document.createElement('div');
+                previewItem.className = 'preview-item';
+                
+                // Determine background color based on category
+                let bgStyle = '';
+                if (config.category === 'appstore') {
+                    bgStyle = 'background: #ffffff; border: 1px solid #e0e0e0;';
+                } else if (config.category === 'ipad') {
+                    bgStyle = 'background: #f0f0f0;';
+                } else {
+                    bgStyle = 'background: #f0f0f0;';
+                }
+                
+                previewItem.innerHTML = `
+                    <h3>${config.name}</h3>
+                    <div class="icon-wrapper" style="${bgStyle}">
+                        <canvas id="ios-${config.size}-${config.filename}" 
+                                width="${config.size}" 
+                                height="${config.size}" 
+                                style="width: ${config.displaySize}px; height: ${config.displaySize}px;"></canvas>
+                    </div>
+                    <div style="font-size: 0.8em; color: #999; margin-top: 5px;">${config.size}×${config.size}</div>
+                `;
+                
+                // Add to appropriate grid based on category
+                if (config.category === 'appstore') {
+                    iosAppStoreGrid.appendChild(previewItem);
+                } else if (config.category === 'ipad') {
+                    iosIpadGrid.appendChild(previewItem);
+                } else {
+                    iosIphoneGrid.appendChild(previewItem);
+                }
+                
+                const canvas = document.getElementById(`ios-${config.size}-${config.filename}`);
+                // Handle duplicate 120x120 by using unique canvas IDs
+                if (!canvases.ios[config.size]) {
+                    canvases.ios[config.size] = canvas;
+                } else {
+                    // For second 120x120, create separate entry
+                    canvases.ios[`${config.size}-alt`] = canvas;
+                }
+                // Draw iOS icon with transparent background, rounded corners
+                drawIconIOS(canvas, config.size);
+            });
+            
+            // Generate Android previews - only preview=true items
+            const androidGrid = document.getElementById('androidPreviewGrid');
+            androidGrid.innerHTML = '';
+            canvases.android = {};
+            
+            androidSizes.filter(config => config.preview).forEach(config => {
+                const previewItem = document.createElement('div');
+                previewItem.className = 'preview-item';
+                previewItem.innerHTML = `
+                    <h3>${config.name}</h3>
+                    <div class="icon-wrapper" style="background: #e0e0e0;">
+                        <canvas id="android-${config.size}" 
+                                width="${config.size}" 
+                                height="${config.size}"
+                                style="width: ${config.displaySize}px; height: ${config.displaySize}px;"></canvas>
+                    </div>
+                    <div style="font-size: 0.8em; color: #999; margin-top: 5px;">${config.folder === 'playstore' ? 'Play Store' : config.folder.replace('mipmap-', '').toUpperCase()}</div>
+                `;
+                androidGrid.appendChild(previewItem);
+                
+                const canvas = document.getElementById(`android-${config.size}`);
+                canvases.android[config.size] = canvas;
+                const applyRadius = document.getElementById('applyRadiusToAndroid').checked;
+                drawIcon(canvas, config.size, applyRadius);
+            });
+            
+            // Also generate non-preview canvases for export (hidden)
+            androidSizes.filter(config => !config.preview).forEach(config => {
+                const canvas = document.createElement('canvas');
+                canvas.width = config.size;
+                canvas.height = config.size;
+                canvas.id = `android-${config.size}`;
+                canvases.android[config.size] = canvas;
+                const applyRadius = document.getElementById('applyRadiusToAndroid').checked;
+                drawIcon(canvas, config.size, applyRadius);
+            });
+        }
+
+        function drawIcon(canvas, size, applyCornerRadius = true, forceRadius = null) {
+            const ctx = canvas.getContext('2d');
+            const padding = parseInt(document.getElementById('padding').value);
+            const cornerRadiusPercent = forceRadius !== null ? forceRadius : parseInt(document.getElementById('cornerRadius').value);
+            const transparentBg = document.getElementById('transparentBg').checked;
+            const bgColor = document.getElementById('bgColor').value;
+            const imageFit = document.getElementById('imageFit').value;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, size, size);
+            
+            // Draw background with rounded corners for iOS
+            if (!transparentBg) {
+                ctx.fillStyle = bgColor;
+                if (applyCornerRadius && cornerRadiusPercent > 0) {
+                    const radius = (size * cornerRadiusPercent) / 100;
+                    roundRect(ctx, 0, 0, size, size, radius);
+                    ctx.fill();
+                } else {
+                    ctx.fillRect(0, 0, size, size);
+                }
+            }
+            
+            // Draw image
+            const drawSize = size - (padding * 2);
+            const drawX = padding;
+            const drawY = padding;
+            
+            ctx.save();
+            
+            // Clip to rounded rectangle if needed
+            if (applyCornerRadius && cornerRadiusPercent > 0) {
+                const radius = (size * cornerRadiusPercent) / 100;
+                roundRect(ctx, 0, 0, size, size, radius);
+                ctx.clip();
+            }
+            
+            // Calculate image dimensions based on fit mode
+            let sx = 0, sy = 0, sw = currentImage.width, sh = currentImage.height;
+            let dx = drawX, dy = drawY, dw = drawSize, dh = drawSize;
+            
+            if (imageFit === 'contain') {
+                const imgRatio = currentImage.width / currentImage.height;
+                const canvasRatio = drawSize / drawSize;
+                
+                if (imgRatio > canvasRatio) {
+                    dh = drawSize / imgRatio;
+                    dy = drawY + (drawSize - dh) / 2;
+                } else {
+                    dw = drawSize * imgRatio;
+                    dx = drawX + (drawSize - dw) / 2;
+                }
+            } else if (imageFit === 'cover') {
+                const imgRatio = currentImage.width / currentImage.height;
+                const canvasRatio = drawSize / drawSize;
+                
+                if (imgRatio > canvasRatio) {
+                    sw = currentImage.height;
+                    sx = (currentImage.width - sw) / 2;
+                } else {
+                    sh = currentImage.width;
+                    sy = (currentImage.height - sh) / 2;
+                }
+            }
+            
+            ctx.drawImage(currentImage, sx, sy, sw, sh, dx, dy, dw, dh);
+            ctx.restore();
+        }
+
+        function drawIconIOS(canvas, size) {
+            const ctx = canvas.getContext('2d');
+            const padding = parseInt(document.getElementById('padding').value);
+            const imageFit = document.getElementById('imageFit').value;
+            const cornerRadiusPercent = 20.37; // iOS standard
+            
+            // Clear canvas - NO background, transparent
+            ctx.clearRect(0, 0, size, size);
+            
+            // Calculate drawing area
+            const drawSize = size - (padding * 2);
+            const drawX = padding;
+            const drawY = padding;
+            
+            ctx.save();
+            
+            // Clip to rounded rectangle (iOS standard shape)
+            const radius = (size * cornerRadiusPercent) / 100;
+            roundRect(ctx, 0, 0, size, size, radius);
+            ctx.clip();
+            
+            // Calculate image dimensions based on fit mode
+            let sx = 0, sy = 0, sw = currentImage.width, sh = currentImage.height;
+            let dx = drawX, dy = drawY, dw = drawSize, dh = drawSize;
+            
+            if (imageFit === 'contain') {
+                const imgRatio = currentImage.width / currentImage.height;
+                const canvasRatio = drawSize / drawSize;
+                
+                if (imgRatio > canvasRatio) {
+                    dh = drawSize / imgRatio;
+                    dy = drawY + (drawSize - dh) / 2;
+                } else {
+                    dw = drawSize * imgRatio;
+                    dx = drawX + (drawSize - dw) / 2;
+                }
+            } else if (imageFit === 'cover') {
+                const imgRatio = currentImage.width / currentImage.height;
+                const canvasRatio = drawSize / drawSize;
+                
+                if (imgRatio > canvasRatio) {
+                    sw = currentImage.height;
+                    sx = (currentImage.width - sw) / 2;
+                } else {
+                    sh = currentImage.width;
+                    sy = (currentImage.height - sh) / 2;
+                }
+            }
+            
+            ctx.drawImage(currentImage, sx, sy, sw, sh, dx, dy, dw, dh);
+            ctx.restore();
+        }
+
+        function roundRect(ctx, x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+        }
+
+        function switchTab(platform) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(platform + 'Tab').classList.add('active');
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(platform + 'Content').classList.add('active');
+        }
+
+        async function exportIosIcons() {
+            if (!currentImage) return;
+            
+            const zip = new JSZip();
+            const appiconset = zip.folder('AppIcon.appiconset');
+            
+            const iosIconConfigs = [];
+            
+            // Export all icons including duplicate 120x120
+            for (const config of iosSizes) {
+                let sourceCanvas;
+                
+                // Handle duplicate 120x120 sizes
+                if (config.filename === 'icon-120-alt.png') {
+                    sourceCanvas = canvases.ios['120-alt'];
+                } else {
+                    sourceCanvas = canvases.ios[config.size];
+                }
+                
+                if (sourceCanvas) {
+                    const blob = await new Promise(resolve => sourceCanvas.toBlob(resolve, 'image/png'));
+                    appiconset.file(config.filename, blob);
+                    
+                    // Determine idiom based on category
+                    let idiom = config.category === 'appstore' ? 'ios-marketing' : 
+                               config.category === 'ipad' ? 'ipad' : 'iphone';
+                    
+                    iosIconConfigs.push({
+                        size: `${config.size}x${config.size}`,
+                        idiom: idiom,
+                        filename: config.filename,
+                        scale: '1x'
+                    });
+                }
+            }
+            
+            // Generate Contents.json for Xcode
+            const contentsJson = {
+                "images": iosIconConfigs,
+                "info": {
+                    "version": 1,
+                    "author": "Icon Converter"
+                }
+            };
+            
+            appiconset.file('Contents.json', JSON.stringify(contentsJson, null, 2));
+            
+            const content = await zip.generateAsync({ type: 'blob' });
+            const now = new Date();
+            const datetime = now.getFullYear().toString() + 
+                String(now.getMonth() + 1).padStart(2, '0') + 
+                String(now.getDate()).padStart(2, '0') + '-' +
+                String(now.getHours()).padStart(2, '0') + 
+                String(now.getMinutes()).padStart(2, '0') + 
+                String(now.getSeconds()).padStart(2, '0');
+            const filename = `ios-icons-${datetime}.zip`;
+            downloadBlob(content, filename);
+            
+            // Show instructions
+            setTimeout(() => {
+                alert(`✅ Đã download: ${filename}
+
+HƯỚNG DẪN SỬ DỤNG iOS:
+=====================
+1. Giải nén file ZIP
+2. Mở Xcode project
+3. Vào Assets.xcassets
+4. Xóa AppIcon hiện tại (nếu có)
+5. Drag & drop folder "AppIcon.appiconset" vào Assets.xcassets
+6. Build & Run app!
+
+HOẶC copy thủ công:
+Vào: [YourProject]/Assets.xcassets/
+Copy folder "AppIcon.appiconset" vào đó
+
+Gồm đầy đủ sizes:
+- iPhone: 20pt-60pt (2x, 3x)
+- iPad: 20pt-83.5pt (1x, 2x)  
+- App Store: 1024x1024
+
+XONG! Logo iOS mới đã được cập nhật.`);
+            }, 500);
+        }
+
+        async function exportAndroidIcons() {
+            if (!currentImage) return;
+            
+            const zip = new JSZip();
+            
+            // Android icon configurations
+            const androidIconConfigs = [
+                { size: 512, folder: 'playstore', filename: 'ic_launcher-playstore.png' },
+                { size: 192, folder: 'mipmap-xxxhdpi', filename: 'ic_launcher.png' },
+                { size: 192, folder: 'mipmap-xxxhdpi', filename: 'ic_launcher_round.png' },
+                { size: 144, folder: 'mipmap-xxhdpi', filename: 'ic_launcher.png' },
+                { size: 144, folder: 'mipmap-xxhdpi', filename: 'ic_launcher_round.png' },
+                { size: 96, folder: 'mipmap-xhdpi', filename: 'ic_launcher.png' },
+                { size: 96, folder: 'mipmap-xhdpi', filename: 'ic_launcher_round.png' },
+                { size: 72, folder: 'mipmap-hdpi', filename: 'ic_launcher.png' },
+                { size: 72, folder: 'mipmap-hdpi', filename: 'ic_launcher_round.png' },
+                { size: 48, folder: 'mipmap-mdpi', filename: 'ic_launcher.png' },
+                { size: 48, folder: 'mipmap-mdpi', filename: 'ic_launcher_round.png' }
+            ];
+            
+            // Generate icons
+            for (const config of androidIconConfigs) {
+                const canvas = canvases.android[config.size];
+                if (canvas) {
+                    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                    const folder = zip.folder(config.folder);
+                    folder.file(config.filename, blob);
+                }
+            }
+            
+            const content = await zip.generateAsync({ type: 'blob' });
+            const now = new Date();
+            const datetime = now.getFullYear().toString() + 
+                String(now.getMonth() + 1).padStart(2, '0') + 
+                String(now.getDate()).padStart(2, '0') + '-' +
+                String(now.getHours()).padStart(2, '0') + 
+                String(now.getMinutes()).padStart(2, '0') + 
+                String(now.getSeconds()).padStart(2, '0');
+            const filename = `android-icons-${datetime}.zip`;
+            downloadBlob(content, filename);
+            
+            // Show instructions
+            setTimeout(() => {
+                alert(`✅ Đã download: ${filename}
+
+HƯỚNG DẪN SỬ DỤNG ANDROID:
+=========================
+1. Giải nén file ZIP
+2. Copy các folder mipmap-* vào:
+   [YourProject]/app/src/main/res/
+
+Cấu trúc folder:
+└── res/
+    ├── mipmap-mdpi/
+    │   ├── ic_launcher.png (48x48)
+    │   └── ic_launcher_round.png (48x48)
+    ├── mipmap-hdpi/
+    │   ├── ic_launcher.png (72x72)
+    │   └── ic_launcher_round.png (72x72)
+    ├── mipmap-xhdpi/
+    │   ├── ic_launcher.png (96x96)
+    │   └── ic_launcher_round.png (96x96)
+    ├── mipmap-xxhdpi/
+    │   ├── ic_launcher.png (144x144)
+    │   └── ic_launcher_round.png (144x144)
+    └── mipmap-xxxhdpi/
+        ├── ic_launcher.png (192x192)
+        └── ic_launcher_round.png (192x192)
+
+3. File playstore/ic_launcher-playstore.png (512x512)
+   để upload lên Google Play Console
+
+4. Build & Run app!
+
+Gồm đầy đủ densities:
+- MDPI (48x48)
+- HDPI (72x72)
+- XHDPI (96x96)
+- XXHDPI (144x144)
+- XXXHDPI (192x192)
+- Play Store (512x512)
+
+XONG! Logo Android mới đã được cập nhật.`);
+            }, 500);
+        }
+
+        function downloadBlob(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Update previews when settings change
+        document.getElementById('bgColor').addEventListener('input', () => {
+            if (currentImage) generatePreviews();
+        });
+
+        document.getElementById('transparentBg').addEventListener('change', () => {
+            if (currentImage) generatePreviews();
+        });
+
+        document.getElementById('cornerRadius').addEventListener('input', (e) => {
+            document.getElementById('cornerRadiusValue').textContent = e.target.value;
+            if (currentImage) generatePreviews();
+        });
+
+        document.getElementById('padding').addEventListener('input', (e) => {
+            document.getElementById('paddingValue').textContent = e.target.value;
+            if (currentImage) generatePreviews();
+        });
+
+        document.getElementById('imageFit').addEventListener('change', () => {
+            if (currentImage) generatePreviews();
+        });
+
+        document.getElementById('applyRadiusToAndroid').addEventListener('change', () => {
+            if (currentImage) generatePreviews();
+        });
+
+        // Background removal functionality (Manual)
+        function openRemoveBgModal() {
+            if (!currentImage) return;
+            
+            const modal = document.getElementById('removeBgModal');
+            removeBgCanvas = document.getElementById('removeBgCanvas');
+            removeBgCtx = removeBgCanvas.getContext('2d', { willReadFrequently: true });
+            
+            // Set canvas to original image size for better quality
+            removeBgCanvas.width = currentImage.width;
+            removeBgCanvas.height = currentImage.height;
+            
+            // Draw image at full resolution
+            removeBgCtx.drawImage(currentImage, 0, 0);
+            
+            // Store original image data
+            originalImageData = removeBgCtx.getImageData(0, 0, removeBgCanvas.width, removeBgCanvas.height);
+            removeBgImageData = removeBgCtx.getImageData(0, 0, removeBgCanvas.width, removeBgCanvas.height);
+            
+            // Reset zoom
+            zoomLevel = 1;
+            updateZoomDisplay();
+            selectedColor = null;
+            
+            // Setup pan functionality
+            const container = document.getElementById('canvasContainer');
+            container.scrollLeft = 0;
+            container.scrollTop = 0;
+            
+            container.addEventListener('mousedown', startPan);
+            container.addEventListener('mousemove', doPan);
+            container.addEventListener('mouseup', endPan);
+            container.addEventListener('mouseleave', endPan);
+            
+            // Add wheel zoom
+            container.addEventListener('wheel', handleWheel, { passive: false });
+            
+            // Add click event
+            removeBgCanvas.addEventListener('click', handleRemoveBgClick);
+            
+            // Add tolerance and edge smoothing change events
+            document.getElementById('toleranceRange').addEventListener('input', handleToleranceChange);
+            document.getElementById('edgeSmoothingRange').addEventListener('input', handleEdgeSmoothingChange);
+            document.getElementById('borderCleanupRange').addEventListener('input', handleBorderCleanupChange);
+            
+            modal.classList.add('active');
+        }
+
+        function closeRemoveBgModal() {
+            const modal = document.getElementById('removeBgModal');
+            modal.classList.remove('active');
+            
+            const container = document.getElementById('canvasContainer');
+            container.removeEventListener('mousedown', startPan);
+            container.removeEventListener('mousemove', doPan);
+            container.removeEventListener('mouseup', endPan);
+            container.removeEventListener('mouseleave', endPan);
+            container.removeEventListener('wheel', handleWheel);
+            
+            if (removeBgCanvas) {
+                removeBgCanvas.removeEventListener('click', handleRemoveBgClick);
+            }
+            document.getElementById('toleranceRange').removeEventListener('input', handleToleranceChange);
+            document.getElementById('edgeSmoothingRange').removeEventListener('input', handleEdgeSmoothingChange);
+            document.getElementById('borderCleanupRange').removeEventListener('input', handleBorderCleanupChange);
+        }
+
+        // Zoom functions
+        function zoomIn() {
+            zoomLevel = Math.min(zoomLevel + 0.25, 5);
+            updateZoomDisplay();
+        }
+
+        function zoomOut() {
+            zoomLevel = Math.max(zoomLevel - 0.25, 0.5);
+            updateZoomDisplay();
+        }
+
+        function resetZoom() {
+            zoomLevel = 1;
+            updateZoomDisplay();
+        }
+
+        function updateZoomDisplay() {
+            removeBgCanvas.style.transform = `scale(${zoomLevel})`;
+            document.getElementById('zoomLevel').textContent = Math.round(zoomLevel * 100) + '%';
+            
+            // Update canvas container
+            const container = document.getElementById('canvasContainer');
+            container.style.width = '100%';
+            container.style.height = '60vh';
+        }
+
+        function handleWheel(e) {
+            e.preventDefault();
+            if (e.deltaY < 0) {
+                zoomIn();
+            } else {
+                zoomOut();
+            }
+        }
+
+        // Pan functions
+        function startPan(e) {
+            if (e.target === removeBgCanvas && e.button === 1) { // Middle mouse button
+                isPanning = true;
+                const container = document.getElementById('canvasContainer');
+                startPanX = e.clientX;
+                startPanY = e.clientY;
+                scrollLeft = container.scrollLeft;
+                scrollTop = container.scrollTop;
+                container.style.cursor = 'grabbing';
+                e.preventDefault();
+            } else if (e.shiftKey && e.target === removeBgCanvas) { // Shift + drag
+                isPanning = true;
+                const container = document.getElementById('canvasContainer');
+                startPanX = e.clientX;
+                startPanY = e.clientY;
+                scrollLeft = container.scrollLeft;
+                scrollTop = container.scrollTop;
+                container.style.cursor = 'grabbing';
+            }
+        }
+
+        function doPan(e) {
+            if (!isPanning) return;
+            e.preventDefault();
+            const container = document.getElementById('canvasContainer');
+            const dx = e.clientX - startPanX;
+            const dy = e.clientY - startPanY;
+            container.scrollLeft = scrollLeft - dx;
+            container.scrollTop = scrollTop - dy;
+        }
+
+        function endPan() {
+            isPanning = false;
+            const container = document.getElementById('canvasContainer');
+            container.style.cursor = 'default';
+        }
+
+        function handleRemoveBgClick(e) {
+            if (isPanning) return; // Don't select color while panning
+            
+            const rect = removeBgCanvas.getBoundingClientRect();
+            const scaleX = removeBgCanvas.width / (rect.width / zoomLevel);
+            const scaleY = removeBgCanvas.height / (rect.height / zoomLevel);
+            
+            const x = Math.floor((e.clientX - rect.left) * scaleX);
+            const y = Math.floor((e.clientY - rect.top) * scaleY);
+            
+            // Get clicked color
+            const imageData = removeBgCtx.getImageData(x, y, 1, 1);
+            selectedColor = {
+                r: imageData.data[0],
+                g: imageData.data[1],
+                b: imageData.data[2]
+            };
+            
+            // Apply removal
+            removeColorFromBackground();
+        }
+
+        function handleToleranceChange(e) {
+            document.getElementById('toleranceValue').textContent = e.target.value;
+            if (selectedColor) {
+                removeColorFromBackground();
+            }
+        }
+
+        function handleEdgeSmoothingChange(e) {
+            document.getElementById('edgeSmoothingValue').textContent = e.target.value;
+            if (selectedColor) {
+                removeColorFromBackground();
+            }
+        }
+
+        function handleBorderCleanupChange(e) {
+            document.getElementById('borderCleanupValue').textContent = e.target.value;
+            if (selectedColor) {
+                removeColorFromBackground();
+            }
+        }
+
+        function removeColorFromBackground() {
+            if (!selectedColor) return;
+            
+            const tolerance = parseInt(document.getElementById('toleranceRange').value);
+            const borderCleanup = parseInt(document.getElementById('borderCleanupRange').value);
+            
+            // Reset to original
+            removeBgImageData = new ImageData(
+                new Uint8ClampedArray(originalImageData.data),
+                originalImageData.width,
+                originalImageData.height
+            );
+            
+            const data = removeBgImageData.data;
+            const edgeSmoothing = parseInt(document.getElementById('edgeSmoothingRange').value);
+            
+            // First pass: Mark pixels for removal and calculate edge distances
+            const removeMap = new Uint8Array(data.length / 4);
+            
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+                
+                // Calculate color distance
+                const distance = Math.sqrt(
+                    Math.pow(r - selectedColor.r, 2) +
+                    Math.pow(g - selectedColor.g, 2) +
+                    Math.pow(b - selectedColor.b, 2)
+                );
+                
+                const pixelIndex = i / 4;
+                // If color is within tolerance, mark for removal
+                if (distance <= tolerance * 4.41) { // 4.41 ≈ sqrt(255^2 * 3) / 100
+                    removeMap[pixelIndex] = 1;
+                }
+            }
+            
+            // Border cleanup pass: Expand removal area to clean up thin borders
+            if (borderCleanup > 0) {
+                const width = removeBgImageData.width;
+                const height = removeBgImageData.height;
+                const expandedMap = new Uint8Array(removeMap);
+                
+                for (let i = 0; i < data.length; i += 4) {
+                    const pixelIndex = i / 4;
+                    if (removeMap[pixelIndex]) {
+                        const x = pixelIndex % width;
+                        const y = Math.floor(pixelIndex / width);
+                        
+                        // Expand removal area around removed pixels
+                        for (let dy = -borderCleanup; dy <= borderCleanup; dy++) {
+                            for (let dx = -borderCleanup; dx <= borderCleanup; dx++) {
+                                const nx = x + dx;
+                                const ny = y + dy;
+                                
+                                if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                                    const neighborIndex = ny * width + nx;
+                                    const ni = neighborIndex * 4;
+                                    
+                                    // Only expand to similar colors
+                                    const nr = data[ni];
+                                    const ng = data[ni + 1];
+                                    const nb = data[ni + 2];
+                                    
+                                    const neighborDist = Math.sqrt(
+                                        Math.pow(nr - selectedColor.r, 2) +
+                                        Math.pow(ng - selectedColor.g, 2) +
+                                        Math.pow(nb - selectedColor.b, 2)
+                                    );
+                                    
+                                    // Expand if neighbor is somewhat similar (more lenient)
+                                    if (neighborDist <= tolerance * 4.41 * 1.5) {
+                                        expandedMap[neighborIndex] = 1;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Copy expanded map back
+                for (let i = 0; i < removeMap.length; i++) {
+                    removeMap[i] = expandedMap[i];
+                }
+            }
+            
+            // Second pass: Apply removal with edge smoothing
+            const width = removeBgImageData.width;
+            const height = removeBgImageData.height;
+            
+            for (let i = 0; i < data.length; i += 4) {
+                const pixelIndex = i / 4;
+                const x = pixelIndex % width;
+                const y = Math.floor(pixelIndex / width);
+                
+                if (removeMap[pixelIndex]) {
+                    data[i + 3] = 0; // Fully transparent
+                } else if (edgeSmoothing > 0) {
+                    // Check if this pixel is near a removed pixel (edge detection)
+                    let nearRemoved = false;
+                    let minDist = edgeSmoothing + 1;
+                    
+                    for (let dy = -edgeSmoothing; dy <= edgeSmoothing; dy++) {
+                        for (let dx = -edgeSmoothing; dx <= edgeSmoothing; dx++) {
+                            const nx = x + dx;
+                            const ny = y + dy;
+                            
+                            if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                                const neighborIndex = ny * width + nx;
+                                if (removeMap[neighborIndex]) {
+                                    nearRemoved = true;
+                                    const dist = Math.sqrt(dx * dx + dy * dy);
+                                    minDist = Math.min(minDist, dist);
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Apply gradient transparency on edges
+                    if (nearRemoved && minDist <= edgeSmoothing) {
+                        const alpha = data[i + 3];
+                        const factor = minDist / edgeSmoothing;
+                        data[i + 3] = Math.floor(alpha * factor);
+                    }
+                }
+            }
+            
+            // Draw updated image
+            removeBgCtx.putImageData(removeBgImageData, 0, 0);
+        }
+
+        function resetRemoveBackground() {
+            if (!originalImageData) return;
+            
+            selectedColor = null;
+            removeBgImageData = new ImageData(
+                new Uint8ClampedArray(originalImageData.data),
+                originalImageData.width,
+                originalImageData.height
+            );
+            removeBgCtx.putImageData(removeBgImageData, 0, 0);
+            document.getElementById('toleranceRange').value = 30;
+            document.getElementById('toleranceValue').textContent = '30';
+            document.getElementById('edgeSmoothingRange').value = 2;
+            document.getElementById('edgeSmoothingValue').textContent = '2';
+            document.getElementById('borderCleanupRange').value = 1;
+            document.getElementById('borderCleanupValue').textContent = '1';
+        }
+
+        function applyRemoveBackground() {
+            if (!removeBgImageData) return;
+            
+            // Use the removed background image data directly (already at original resolution)
+            const finalCanvas = document.createElement('canvas');
+            finalCanvas.width = removeBgCanvas.width;
+            finalCanvas.height = removeBgCanvas.height;
+            const finalCtx = finalCanvas.getContext('2d');
+            
+            finalCtx.putImageData(removeBgImageData, 0, 0);
+            
+            // Convert to image and reload
+            const img = new Image();
+            img.onload = () => {
+                currentImage = img;
+                document.getElementById('currentImage').src = img.src;
+                generatePreviews();
+                closeRemoveBgModal();
+            };
+            img.src = finalCanvas.toDataURL('image/png');
+        }
+    </script>
+</body>
+</html>

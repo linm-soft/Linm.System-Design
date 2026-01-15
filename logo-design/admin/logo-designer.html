@@ -1,0 +1,1802 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linm Logo Designer - Smart Call Blocker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: rgba(255,255,255,0.95);
+            font-size: 1.1em;
+            margin-bottom: 30px;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .controls-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+            position: sticky;
+            top: 20px;
+        }
+        
+        .controls-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .controls-panel::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .controls-panel::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+        
+        .controls-panel::-webkit-scrollbar-thumb:hover {
+            background: #5568d3;
+        }
+
+        .preview-area {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .control-group input[type="range"],
+        .control-group input[type="number"],
+        .control-group select {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .control-group input[type="color"] {
+            width: 100%;
+            height: 40px;
+            padding: 2px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .control-group input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        .control-group input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: 6px;
+        }
+
+        .control-group input[type="color"]::-moz-color-swatch {
+            border: none;
+            border-radius: 6px;
+        }
+
+        .control-group input[type="range"] {
+            padding: 0;
+        }
+
+        .range-value {
+            display: inline-block;
+            margin-left: 10px;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .preview-item {
+            text-align: center;
+        }
+
+        .preview-item h3 {
+            color: #555;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .icon-wrapper {
+            background: #f5f5f5;
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .export-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .color-preset {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .color-preset-btn {
+            width: 100%;
+            height: 40px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 0;
+            margin: 0;
+        }
+
+        .color-preset-btn:hover {
+            transform: scale(1.1);
+            border-color: #667eea;
+        }
+
+        .section-title {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        #xmlOutput {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Linm Logo Designer</h1>
+        <p class="subtitle">Thiết kế logo nghệ thuật cho Smart Call Blocker</p>
+
+        <div class="main-layout">
+            <!-- Controls Panel -->
+            <div class="controls-panel">
+                <div class="section-title">📱 Chọn App</div>
+                
+                <div class="control-group">
+                    <label>App:</label>
+                    <select id="appSelect" onchange="onAppChange()">
+                        <option value="smart-call-block" selected>Smart Call Block</option>
+                        <option value="quick-snooze">Quick Snooze</option>
+                        <option value="daily-speak">Daily Speak</option>
+                    </select>
+                </div>
+
+                <div class="section-title">🎨 Màu Sắc</div>
+                
+                <div class="control-group">
+                    <label>Màu nền chính:</label>
+                    <input type="color" id="bgColor1" value="#4facfe">
+                </div>
+
+                <div class="control-group">
+                    <label>Màu nền phụ:</label>
+                    <input type="color" id="bgColor2" value="#00f2fe">
+                </div>
+
+                <div class="control-group">
+                    <label>Màu viền chữ:</label>
+                    <input type="color" id="linStroke" value="#0077cc">
+                </div>
+
+                <div class="control-group">
+                    <label>Màu chữ M (trong dấu chấm):</label>
+                    <input type="color" id="mColor" value="#ea1b8d">
+                </div>
+
+                <div class="control-group">
+                    <label>Preset màu sắc:</label>
+                    <div class="color-preset">
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #667eea, #764ba2)" onclick="applyPreset('purple')" title="Purple Gradient"></button>
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #f093fb, #f5576c)" onclick="applyPreset('pink')" title="Pink Gradient"></button>
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #4facfe, #00f2fe)" onclick="applyPreset('blue')" title="Blue Gradient"></button>
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #43e97b, #38f9d7)" onclick="applyPreset('green')" title="Green Gradient"></button>
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #1e3c72, #2a5298)" onclick="applyPreset('corporate')" title="Corporate Blue"></button>
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #2c3e50, #34495e)" onclick="applyPreset('professional')" title="Professional Gray"></button>
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #0f2027, #203a43, #2c5364)" onclick="applyPreset('executive')" title="Executive Dark"></button>
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #134e5e, #71b280)" onclick="applyPreset('business')" title="Business Green"></button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Thêm preset chuyên nghiệp:</label>
+                    <div class="color-preset">
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #283c86, #45a247)" onclick="applyPreset('tech')" title="Tech Professional"></button>
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #000428, #004e92)" onclick="applyPreset('navy')" title="Navy Professional"></button>
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #232526, #414345)" onclick="applyPreset('modern')" title="Modern Minimal"></button>
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #654ea3, #eaafc8)" onclick="applyPreset('elegant')" title="Elegant Purple"></button>
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #c31432, #240b36)" onclick="applyPreset('premium')" title="Premium Red"></button>
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #00b4db, #0083b0)" onclick="applyPreset('clean')" title="Clean Blue"></button>
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #2b5876, #4e4376)" onclick="applyPreset('classic')" title="Classic Professional"></button>
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #1c92d2, #f2fcfe)" onclick="applyPreset('fresh')" title="Fresh & Clean"></button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>🖥️ Software & Tech Themes:</label>
+                    <div class="color-preset">
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #0f0c29, #302b63, #24243e)" onclick="applyPreset('software')" title="Software Dark"></button>
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #141e30, #243b55)" onclick="applyPreset('codeDark')" title="Code Dark"></button>
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #2193b0, #6dd5ed)" onclick="applyPreset('cyberpunk')" title="Cyberpunk Blue"></button>
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #ee0979, #ff6a00)" onclick="applyPreset('devOps')" title="DevOps"></button>
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #00c6ff, #0072ff)" onclick="applyPreset('cloudBlue')" title="Cloud Blue"></button>
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #8e2de2, #4a00e0)" onclick="applyPreset('ultraViolet')" title="Ultra Violet"></button>
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #0b486b, #f56217)" onclick="applyPreset('stackoverflow')" title="Stack Overflow"></button>
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #12c2e9, #c471ed, #f64f59)" onclick="applyPreset('gradient3')" title="Neon Gradient"></button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>💻 Developer Inspired:</label>
+                    <div class="color-preset">
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #1e272e, #485460)" onclick="applyPreset('vscode')" title="VS Code Dark"></button>
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #24292e, #2f363d)" onclick="applyPreset('github')" title="GitHub Dark"></button>
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #667db6, #0082c8, #0082c8, #667db6)" onclick="applyPreset('intellij')" title="IntelliJ"></button>
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #434343, #000000)" onclick="applyPreset('terminal')" title="Terminal"></button>
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #16a085, #f4d03f)" onclick="applyPreset('android')" title="Android"></button>
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #00d2ff, #3a7bd5)" onclick="applyPreset('windows')" title="Windows"></button>
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #f2994a, #f2c94c)" onclick="applyPreset('firebase')" title="Firebase"></button>
+                        <button class="color-preset-btn" style="background: linear-gradient(135deg, #fc4a1a, #f7b733)" onclick="applyPreset('gitlab')" title="GitLab"></button>
+                    </div>
+                </div>
+
+                <div class="section-title" style="margin-top: 25px;">🎯 Thiết Lập Chung</div>
+
+                <div class="control-group">
+                    <label>🔧 Kích thước inner items: <span class="range-value" id="innerScaleValue">60</span>%</label>
+                    <input type="range" id="innerScale" min="50" max="150" value="60" step="5">
+                </div>
+
+                <div class="control-group">
+                    <label>📍 Vị trí X (inner items): <span class="range-value" id="innerOffsetXValue">-4</span></label>
+                    <input type="range" id="innerOffsetX" min="-30" max="30" value="-4" step="1">
+                </div>
+
+                <div class="control-group">
+                    <label>📍 Vị trí Y (inner items): <span class="range-value" id="innerOffsetYValue">2</span></label>
+                    <input type="range" id="innerOffsetY" min="-30" max="30" value="2" step="1">
+                </div>
+
+                <div class="section-title" style="margin-top: 25px;">⚙️ Chỉnh Sửa Chi Tiết</div>
+
+                <div class="control-group">
+                    <label>🔤 Chọn chữ để chỉnh sửa:</label>
+                    <select id="selectedChar" onchange="loadCharSettings()">
+                        <option value="L">Chữ L</option>
+                        <option value="i">Chữ i</option>
+                        <option value="n">Chữ n</option>
+                        <option value="M">Dấu chấm (M)</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>Màu chữ: <span id="currentCharLabel">L</span></label>
+                    <input type="color" id="charColor" value="#FFFFFF">
+                    <div style="margin-top: 8px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="charGradientEnabled" style="width: 18px; height: 18px;">
+                            <span style="font-size: 0.85em; color: #666;">Gradient dọc</span>
+                        </label>
+                    </div>
+                    <div id="charGradientColor2Wrapper" style="margin-top: 8px; display: none;">
+                        <label style="font-size: 0.85em; color: #666; margin-bottom: 5px; display: block;">Màu gradient 2:</label>
+                        <input type="color" id="charColor2" value="#667eea" style="width: 100%;">
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <label style="font-size: 0.85em; color: #666; margin-bottom: 5px; display: block;">Quick Colors:</label>
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+                            <button class="color-preset-btn" style="background: linear-gradient(180deg, #FFFFFF, #F0F0F0); border: 2px solid #ddd;" onclick="applyCharColor('#FFFFFF')" title="White"></button>
+                            <button class="color-preset-btn" style="background: linear-gradient(180deg, #667eea, #764ba2)" onclick="applyCharGradient('#667eea', '#764ba2')" title="Purple Gradient"></button>
+                            <button class="color-preset-btn" style="background: linear-gradient(180deg, #f093fb, #f5576c)" onclick="applyCharGradient('#f093fb', '#f5576c')" title="Pink Gradient"></button>
+                            <button class="color-preset-btn" style="background: linear-gradient(180deg, #4facfe, #00f2fe)" onclick="applyCharGradient('#4facfe', '#00f2fe')" title="Blue Gradient"></button>
+                            <button class="color-preset-btn" style="background: linear-gradient(180deg, #43e97b, #38f9d7)" onclick="applyCharGradient('#43e97b', '#38f9d7')" title="Green Gradient"></button>
+                            <button class="color-preset-btn" style="background: linear-gradient(180deg, #fa709a, #fee140)" onclick="applyCharGradient('#fa709a', '#fee140')" title="Sunset Gradient"></button>
+                            <button class="color-preset-btn" style="background: linear-gradient(180deg, #ff9a56, #ff6a88)" onclick="applyCharGradient('#ff9a56', '#ff6a88')" title="Orange Gradient"></button>
+                            <button class="color-preset-btn" style="background: linear-gradient(180deg, #ffeaa7, #fdcb6e)" onclick="applyCharGradient('#ffeaa7', '#fdcb6e')" title="Yellow Gradient"></button>
+                            <button class="color-preset-btn" style="background: linear-gradient(180deg, #00b4db, #0083b0)" onclick="applyCharGradient('#00b4db', '#0083b0')" title="Ocean Gradient"></button>
+                            <button class="color-preset-btn" style="background: linear-gradient(180deg, #8e2de2, #4a00e0)" onclick="applyCharGradient('#8e2de2', '#4a00e0')" title="Violet Gradient"></button>
+                            <button class="color-preset-btn" style="background: linear-gradient(180deg, #ee0979, #ff6a00)" onclick="applyCharGradient('#ee0979', '#ff6a00')" title="Hot Gradient"></button>
+                            <button class="color-preset-btn" style="background: linear-gradient(180deg, #000000, #434343)" onclick="applyCharGradient('#000000', '#434343')" title="Black Gradient"></button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label>Màu viền:</label>
+                    <input type="color" id="charStroke" value="#0077cc">
+                </div>
+                
+                <div class="control-group">
+                    <label>Độ dày viền: <span class="range-value" id="charStrokeWidthValue">3</span></label>
+                    <input type="range" id="charStrokeWidth" min="0" max="10" value="3" step="0.5">
+                </div>
+
+                <div class="control-group">
+                    <label>Kích thước: <span class="range-value" id="charSizeValue">48</span></label>
+                    <input type="range" id="charSize" min="20" max="70" value="48" step="2">
+                </div>
+
+                <!-- Controls riêng cho M -->
+                <div id="mControls" style="display: none;">
+                    <div class="section-title" style="margin: 15px 0 10px 0; font-size: 0.9em;">📍 Vị trí Circle</div>
+                    <div class="control-group">
+                        <label>Circle X: <span class="range-value" id="circlePosXValue">41</span></label>
+                        <input type="range" id="circlePosX" min="-20" max="120" value="41" step="1">
+                    </div>
+                    <div class="control-group">
+                        <label>Circle Y: <span class="range-value" id="circlePosYValue">11</span></label>
+                        <input type="range" id="circlePosY" min="-20" max="120" value="11" step="1">
+                    </div>
+                    
+                    <div class="section-title" style="margin: 15px 0 10px 0; font-size: 0.9em;">📍 Vị trí chữ M (trong circle)</div>
+                    <div class="control-group">
+                        <label>M X offset: <span class="range-value" id="mPosXValue">0</span></label>
+                        <input type="range" id="mPosX" min="-20" max="20" value="0" step="0.5">
+                    </div>
+                    <div class="control-group">
+                        <label>M Y offset: <span class="range-value" id="mPosYValue">0</span></label>
+                        <input type="range" id="mPosY" min="-20" max="20" value="0" step="0.5">
+                    </div>
+                    
+                    <div class="section-title" style="margin: 15px 0 10px 0; font-size: 0.9em;">🔴 Viền Circle</div>
+                    <div class="control-group">
+                        <label>Màu viền Circle:</label>
+                        <input type="color" id="circleStroke" value="#0077cc">
+                    </div>
+                    <div class="control-group">
+                        <label>Độ dày viền Circle: <span class="range-value" id="circleStrokeWidthValue">0</span></label>
+                        <input type="range" id="circleStrokeWidth" min="0" max="5" value="0" step="0.5">
+                    </div>
+                </div>
+
+                <!-- Controls cho L, i, n -->
+                <div id="normalControls">
+                    <div class="control-group">
+                        <label>Vị trí X (Trái/Phải): <span class="range-value" id="charPosXValue">28</span></label>
+                        <input type="range" id="charPosX" min="-20" max="120" value="28" step="1">
+                    </div>
+
+                    <div class="control-group">
+                        <label>Vị trí Y (Trên/Dưới): <span class="range-value" id="charPosYValue">65</span></label>
+                        <input type="range" id="charPosY" min="-20" max="120" value="65" step="1">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Font chữ:</label>
+                    <select id="charFont">
+                        <option value="sans-serif" selected>Sans Serif (Roboto)</option>
+                        <option value="serif">Serif (Noto Serif)</option>
+                        <option value="monospace">Monospace</option>
+                        <option value="sans-serif-condensed">Sans Serif Condensed</option>
+                        <option value="sans-serif-medium">Sans Serif Medium</option>
+                        <option value="sans-serif-light">Sans Serif Light</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label>Kiểu chữ (Case):</label>
+                    <select id="charCase">
+                        <option value="upper">Chữ Hoa (UPPER)</option>
+                        <option value="lower" selected>Chữ thường (lower)</option>
+                    </select>
+                </div>
+
+                <div class="export-section">
+                    <button onclick="exportToXML()">📥 Xuất XML cho Android</button>
+                    <button onclick="downloadSVG()">💾 Tải SVG File</button>
+                    <button onclick="copyToClipboard()">📋 Copy XML</button>
+                </div>
+            </div>
+
+            <!-- Preview Area -->
+            <div class="preview-area">
+                <h2 style="color: #333; margin-bottom: 20px; cursor: pointer;" onclick="toggleLogoPreview()">
+                    👁️ Xem Trước Logo 
+                    <span id="logoPreviewToggle" style="font-size: 0.7em; color: #667eea;">▶ Show</span>
+                </h2>
+                
+                <div id="logoPreviewGrid" class="preview-grid" style="display: none;">
+                    <div class="preview-item">
+                        <h3>192x192 (XXXHDPI)</h3>
+                        <div class="icon-wrapper">
+                            <svg id="logo192" width="192" height="192" viewBox="0 0 108 108"></svg>
+                        </div>
+                    </div>
+
+                    <div class="preview-item">
+                        <h3>144x144 (XXHDPI)</h3>
+                        <div class="icon-wrapper">
+                            <svg id="logo144" width="144" height="144" viewBox="0 0 108 108"></svg>
+                        </div>
+                    </div>
+
+                    <div class="preview-item">
+                        <h3>96x96 (XHDPI)</h3>
+                        <div class="icon-wrapper">
+                            <svg id="logo96" width="96" height="96" viewBox="0 0 108 108"></svg>
+                        </div>
+                    </div>
+
+                    <div class="preview-item">
+                        <h3>72x72 (HDPI)</h3>
+                        <div class="icon-wrapper">
+                            <svg id="logo72" width="72" height="72" viewBox="0 0 108 108"></svg>
+                        </div>
+                    </div>
+
+                    <div class="preview-item">
+                        <h3>48x48 (MDPI)</h3>
+                        <div class="icon-wrapper">
+                            <svg id="logo48" width="48" height="48" viewBox="0 0 108 108"></svg>
+                        </div>
+                    </div>
+
+                    <div class="preview-item">
+                        <h3>36x36 (Small)</h3>
+                        <div class="icon-wrapper">
+                            <svg id="logo36" width="36" height="36" viewBox="0 0 108 108"></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <h3 style="color: #333; margin-bottom: 15px;">📋 Backup Settings</h3>
+                    <button onclick="copySettingsToClipboard(event)" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">
+                        📋 Copy Settings to Clipboard
+                    </button>
+                    <div id="settingsOutput" style="display: none;"></div>
+                </div>
+
+                <!-- Platform Tabs -->
+                <div style="margin-top: 30px;">
+                    <div class="platform-tabs" style="display: flex; border-bottom: 2px solid #e0e0e0; margin-bottom: 20px;">
+                        <button id="androidTab" class="tab-button active" onclick="switchTab('android')" 
+                                style="flex: 1; padding: 12px; background: none; border: none; border-bottom: 3px solid #43e97b; 
+                                       color: #43e97b; font-weight: 600; cursor: pointer; font-size: 14px;">
+                            🤖 Android
+                        </button>
+                        <button id="iosTab" class="tab-button" onclick="switchTab('ios')" 
+                                style="flex: 1; padding: 12px; background: none; border: none; border-bottom: 3px solid transparent; 
+                                       color: #666; font-weight: 600; cursor: pointer; font-size: 14px;">
+                            🍎 iOS
+                        </button>
+                    </div>
+
+                    <!-- Android Tab Content -->
+                    <div id="androidContent" class="tab-content">
+                        <!-- XML Preview Section -->
+                        <div style="padding: 20px; background: #f8f9fa; border-radius: 12px; border: 2px dashed #43e97b; margin-bottom: 20px;">
+                            <h3 style="color: #43e97b; margin-bottom: 15px;">📱 Android Preview (XML Actual)</h3>
+                            <p style="color: #666; font-size: 0.9em; margin-bottom: 15px;">Đây là preview chính xác như XML sẽ hiển thị trên Android</p>
+                            <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+                                <div class="preview-item">
+                                    <h3>192x192</h3>
+                                    <div class="icon-wrapper" style="background: #e0e0e0;">
+                                        <svg id="xmlPreview192" width="192" height="192" viewBox="0 0 108 108"></svg>
+                                    </div>
+                                </div>
+                                <div class="preview-item">
+                                    <h3>96x96</h3>
+                                    <div class="icon-wrapper" style="background: #e0e0e0;">
+                                        <svg id="xmlPreview96" width="96" height="96" viewBox="0 0 108 108"></svg>
+                                    </div>
+                                </div>
+                                <div class="preview-item">
+                                    <h3>48x48</h3>
+                                    <div class="icon-wrapper" style="background: #e0e0e0;">
+                                        <svg id="xmlPreview48" width="48" height="48" viewBox="0 0 108 108"></svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Android Export -->
+                        <div>
+                            <h3 style="color: #333; margin-bottom: 15px;">📦 Export Android Files</h3>
+                            <button onclick="downloadAndroidFiles()" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #43e97b, #38f9d7); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">
+                                📦 Download Android Icon Package
+                            </button>
+                            <div id="xmlOutput" style="display: none;"></div>
+                        </div>
+                    </div>
+
+                    <!-- iOS Tab Content -->
+                    <div id="iosContent" class="tab-content" style="display: none;">
+                        <!-- iOS Preview Section -->
+                        <div style="padding: 20px; background: #f8f9fa; border-radius: 12px; border: 2px dashed #ff6b95; margin-bottom: 20px;">
+                            <h3 style="color: #ff6b95; margin-bottom: 15px;">🍎 iOS Preview Icons</h3>
+                            <p style="color: #666; font-size: 0.9em; margin-bottom: 15px;">Preview các kích thước icon cho iPhone và iPad</p>
+                            
+                            <div style="margin-bottom: 20px;">
+                                <h4 style="color: #ff6b95; margin-bottom: 10px; font-size: 14px;">📱 iPhone Icons</h4>
+                                <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                                    <div class="preview-item">
+                                        <h3>60pt @3x</h3>
+                                        <div class="icon-wrapper" style="background: #000;">
+                                            <svg id="iosPreview180" width="60" height="60" viewBox="0 0 108 108"></svg>
+                                        </div>
+                                        <small>180x180</small>
+                                    </div>
+                                    <div class="preview-item">
+                                        <h3>60pt @2x</h3>
+                                        <div class="icon-wrapper" style="background: #000;">
+                                            <svg id="iosPreview120" width="48" height="48" viewBox="0 0 108 108"></svg>
+                                        </div>
+                                        <small>120x120</small>
+                                    </div>
+                                    <div class="preview-item">
+                                        <h3>40pt @3x</h3>
+                                        <div class="icon-wrapper" style="background: #000;">
+                                            <svg id="iosPreview120_2" width="40" height="40" viewBox="0 0 108 108"></svg>
+                                        </div>
+                                        <small>120x120</small>
+                                    </div>
+                                    <div class="preview-item">
+                                        <h3>29pt @3x</h3>
+                                        <div class="icon-wrapper" style="background: #000;">
+                                            <svg id="iosPreview87" width="29" height="29" viewBox="0 0 108 108"></svg>
+                                        </div>
+                                        <small>87x87</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom: 20px;">
+                                <h4 style="color: #ff6b95; margin-bottom: 10px; font-size: 14px;">📱 iPad Icons</h4>
+                                <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                                    <div class="preview-item">
+                                        <h3>76pt @2x</h3>
+                                        <div class="icon-wrapper" style="background: #f0f0f0;">
+                                            <svg id="iosPreview152" width="60" height="60" viewBox="0 0 108 108"></svg>
+                                        </div>
+                                        <small>152x152</small>
+                                    </div>
+                                    <div class="preview-item">
+                                        <h3>76pt @1x</h3>
+                                        <div class="icon-wrapper" style="background: #f0f0f0;">
+                                            <svg id="iosPreview76" width="48" height="48" viewBox="0 0 108 108"></svg>
+                                        </div>
+                                        <small>76x76</small>
+                                    </div>
+                                    <div class="preview-item">
+                                        <h3>83.5pt @2x</h3>
+                                        <div class="icon-wrapper" style="background: #f0f0f0;">
+                                            <svg id="iosPreview167" width="55" height="55" viewBox="0 0 108 108"></svg>
+                                        </div>
+                                        <small>167x167</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 style="color: #ff6b95; margin-bottom: 10px; font-size: 14px;">🏪 App Store</h4>
+                                <div style="display: flex; justify-content: center;">
+                                    <div class="preview-item">
+                                        <h3>1024x1024</h3>
+                                        <div class="icon-wrapper" style="background: #ffffff; border: 1px solid #e0e0e0;">
+                                            <svg id="iosPreview1024" width="80" height="80" viewBox="0 0 108 108"></svg>
+                                        </div>
+                                        <small>App Store</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- iOS Export -->
+                        <div>
+                            <h3 style="color: #333; margin-bottom: 15px;">🍎 Export iOS Files</h3>
+                            <button onclick="downloadIOSFiles()" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #ff9a56, #ff6b95); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">
+                                🍎 Download iOS Icon Package
+                            </button>
+                            <div style="margin-top: 10px; padding: 12px; background: #f8f9fa; border-radius: 8px; font-size: 12px; color: #666;">
+                                Bao gồm tất cả kích thước iOS cần thiết từ 20x20 đến 1024x1024
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching function
+        function switchTab(platform) {
+            // Update tab buttons
+            const androidTab = document.getElementById('androidTab');
+            const iosTab = document.getElementById('iosTab');
+            
+            if (platform === 'android') {
+                androidTab.style.borderBottom = '3px solid #43e97b';
+                androidTab.style.color = '#43e97b';
+                iosTab.style.borderBottom = '3px solid transparent';
+                iosTab.style.color = '#666';
+                
+                document.getElementById('androidContent').style.display = 'block';
+                document.getElementById('iosContent').style.display = 'none';
+            } else {
+                iosTab.style.borderBottom = '3px solid #ff6b95';
+                iosTab.style.color = '#ff6b95';
+                androidTab.style.borderBottom = '3px solid transparent';
+                androidTab.style.color = '#666';
+                
+                document.getElementById('androidContent').style.display = 'none';
+                document.getElementById('iosContent').style.display = 'block';
+            }
+            
+            // Force update previews after tab switch
+            setTimeout(() => {
+                updateXMLOutput();
+            }, 50);
+        }
+        // App theme settings storage
+        const appThemes = {
+            'smart-call-block': {
+                bgColor1: '#4facfe',
+                bgColor2: '#00f2fe',
+                linStroke: '#0077cc',
+                mColor: '#ea1b8d',
+                innerScale: 60,
+                innerOffsetX: -4,
+                innerOffsetY: 2,
+                characters: {
+                    L: { color: '#FFFFFF', color2: '#ffffff', gradientEnabled: false, size: 54, posX: 19, posY: 65, font: "sans-serif", case: 'upper', stroke: '#000000', strokeWidth: 0.5 },
+                    i: { color: '#FFFFFF', color2: '#ffffff', gradientEnabled: false, size: 60, posX: 60, posY: 87, font: "sans-serif", case: 'upper', stroke: '#ea1b8d', strokeWidth: 1 },
+                    n: { color: '#FFFFFF', color2: '#ffffff', gradientEnabled: false, size: 62, posX: 97, posY: 79, font: "sans-serif", case: 'upper', stroke: '#0077cc', strokeWidth: 0.5 },
+                    M: { color: '#f3efed', color2: '#ffffff', gradientEnabled: false, size: 28, circlePosX: 45, circlePosY: 11, mPosX: 0.5, mPosY: -2.5, font: "sans-serif", case: 'upper', mColor: '#ea1b8d', stroke: '#ea1b8d', strokeWidth: 0, circleStroke: '#ea1b8d', circleStrokeWidth: 0.5 }
+                }
+            },
+            'quick-snooze': {
+                bgColor1: '#00b4db',
+                bgColor2: '#0083b0',
+                linStroke: '#005f7f',
+                mColor: '#ea1b8d',
+                innerScale: 60,
+                innerOffsetX: -4,
+                innerOffsetY: 2,
+                characters: {
+                    L: { color: '#FFFFFF', color2: '#ffffff', gradientEnabled: false, size: 54, posX: 19, posY: 65, font: "sans-serif", case: 'upper', stroke: '#000000', strokeWidth: 0.5 },
+                    i: { color: '#FFFFFF', color2: '#ffffff', gradientEnabled: false, size: 60, posX: 60, posY: 87, font: "sans-serif", case: 'upper', stroke: '#ea1b8d', strokeWidth: 1 },
+                    n: { color: '#FFFFFF', color2: '#ffffff', gradientEnabled: false, size: 62, posX: 97, posY: 79, font: "sans-serif", case: 'upper', stroke: '#0077cc', strokeWidth: 0.5 },
+                    M: { color: '#f3e5a0', color2: '#ffffff', gradientEnabled: false, size: 28, circlePosX: 45, circlePosY: 11, mPosX: 0.5, mPosY: -2.5, font: "sans-serif", case: 'upper', mColor: '#ea1b8d', stroke: '#ea1b8d', strokeWidth: 0, circleStroke: '#ea1b8d', circleStrokeWidth: 0.5 }
+                }
+            },
+            'daily-speak': {
+                bgColor1: '#12c2e9',
+                bgColor2: '#f64f59',
+                linStroke: '#0a7a94',
+                mColor: '#ffffff',
+                innerScale: 60,
+                innerOffsetX: -4,
+                innerOffsetY: 2,
+                characters: {
+                    L: { color: '#FFFFFF', color2: '#ffffff', gradientEnabled: false, size: 54, posX: 19, posY: 65, font: "sans-serif", case: 'upper', stroke: '#000000', strokeWidth: 0.5 },
+                    i: { color: '#FFFFFF', color2: '#ffffff', gradientEnabled: false, size: 60, posX: 60, posY: 87, font: "sans-serif", case: 'upper', stroke: '#ea1b8d', strokeWidth: 1 },
+                    n: { color: '#FFFFFF', color2: '#ffffff', gradientEnabled: false, size: 62, posX: 97, posY: 79, font: "sans-serif", case: 'upper', stroke: '#0077cc', strokeWidth: 0.5 },
+                    M: { color: '#FF6F00', color2: '#ffffff', gradientEnabled: false, size: 28, circlePosX: 45, circlePosY: 11, mPosX: 0.5, mPosY: -2.5, font: "sans-serif", case: 'upper', mColor: '#ea1b8d', stroke: '#ea1b8d', strokeWidth: 0, circleStroke: '#ea1b8d', circleStrokeWidth: 0.5 }
+                }
+            }
+        };
+
+        // Current app
+        let currentApp = 'smart-call-block';
+
+        // Handle app change
+        function onAppChange() {
+            // Save current theme to current app
+            saveCurrentThemeToApp(currentApp);
+            
+            // Switch to new app
+            currentApp = document.getElementById('appSelect').value;
+            
+            // Load theme from new app
+            loadThemeFromApp(currentApp);
+            
+            // Update preview
+            updateLogo();
+        }
+
+        // Save current theme settings to app
+        function saveCurrentThemeToApp(appName) {
+            appThemes[appName] = {
+                bgColor1: document.getElementById('bgColor1').value,
+                bgColor2: document.getElementById('bgColor2').value,
+                linStroke: document.getElementById('linStroke').value,
+                mColor: document.getElementById('mColor').value,
+                innerScale: parseFloat(document.getElementById('innerScale').value),
+                innerOffsetX: parseFloat(document.getElementById('innerOffsetX').value),
+                innerOffsetY: parseFloat(document.getElementById('innerOffsetY').value),
+                characters: JSON.parse(JSON.stringify(charSettings))
+            };
+        }
+
+        // Load theme settings from app
+        function loadThemeFromApp(appName) {
+            const theme = appThemes[appName];
+            if (theme) {
+                document.getElementById('bgColor1').value = theme.bgColor1;
+                document.getElementById('bgColor2').value = theme.bgColor2;
+                document.getElementById('linStroke').value = theme.linStroke;
+                document.getElementById('mColor').value = theme.mColor;
+                
+                // Load global settings
+                if (theme.innerScale !== undefined) {
+                    document.getElementById('innerScale').value = theme.innerScale;
+                }
+                if (theme.innerOffsetX !== undefined) {
+                    document.getElementById('innerOffsetX').value = theme.innerOffsetX;
+                }
+                if (theme.innerOffsetY !== undefined) {
+                    document.getElementById('innerOffsetY').value = theme.innerOffsetY;
+                }
+                
+                // Load character settings
+                if (theme.characters) {
+                    Object.assign(charSettings, JSON.parse(JSON.stringify(theme.characters)));
+                    loadCharSettings(); // Reload current character settings in UI
+                }
+            }
+        }
+
+        // Character settings storage
+        const charSettings = {
+            L: { color: '#FFFFFF', color2: '#ffffff', gradientEnabled: false, size: 54, posX: 19, posY: 65, font: "sans-serif", case: 'upper', stroke: '#000000', strokeWidth: 0.5 },
+            i: { color: '#FFFFFF', color2: '#ffffff', gradientEnabled: false, size: 60, posX: 60, posY: 87, font: "sans-serif", case: 'upper', stroke: '#ea1b8d', strokeWidth: 1 },
+            n: { color: '#FFFFFF', color2: '#ffffff', gradientEnabled: false, size: 62, posX: 97, posY: 79, font: "sans-serif", case: 'upper', stroke: '#0077cc', strokeWidth: 0.5 },
+            M: { color: '#FF6F00', color2: '#ffffff', gradientEnabled: false, size: 28, circlePosX: 45, circlePosY: 11, mPosX: 0.5, mPosY: -2.5, font: "sans-serif", case: 'upper', mColor: '#ea1b8d', stroke: '#ea1b8d', strokeWidth: 0, circleStroke: '#ea1b8d', circleStrokeWidth: 0.5 }
+        };
+
+        // Load settings for selected character
+        function loadCharSettings() {
+            const selectedChar = document.getElementById('selectedChar').value;
+            const settings = charSettings[selectedChar];
+            
+            document.getElementById('currentCharLabel').textContent = selectedChar;
+            document.getElementById('charColor').value = settings.color;
+            document.getElementById('charColor2').value = settings.color2 || settings.color;
+            document.getElementById('charGradientEnabled').checked = settings.gradientEnabled || false;
+            document.getElementById('charGradientColor2Wrapper').style.display = settings.gradientEnabled ? 'block' : 'none';
+            document.getElementById('charSize').value = settings.size;
+            document.getElementById('charFont').value = settings.font;
+            document.getElementById('charCase').value = settings.case;
+            document.getElementById('charStroke').value = settings.stroke;
+            document.getElementById('charStrokeWidth').value = settings.strokeWidth;
+            
+            document.getElementById('charSizeValue').textContent = settings.size;
+            document.getElementById('charStrokeWidthValue').textContent = settings.strokeWidth;
+            
+            // Show/hide controls based on character
+            if (selectedChar === 'M') {
+                document.getElementById('mControls').style.display = 'block';
+                document.getElementById('normalControls').style.display = 'none';
+                
+                document.getElementById('circlePosX').value = settings.circlePosX;
+                document.getElementById('circlePosY').value = settings.circlePosY;
+                document.getElementById('mPosX').value = settings.mPosX;
+                document.getElementById('mPosY').value = settings.mPosY;
+                document.getElementById('circleStroke').value = settings.circleStroke;
+                document.getElementById('circleStrokeWidth').value = settings.circleStrokeWidth;
+                
+                document.getElementById('circlePosXValue').textContent = settings.circlePosX;
+                document.getElementById('circlePosYValue').textContent = settings.circlePosY;
+                document.getElementById('mPosXValue').textContent = settings.mPosX;
+                document.getElementById('mPosYValue').textContent = settings.mPosY;
+                document.getElementById('circleStrokeWidthValue').textContent = settings.circleStrokeWidth;
+            } else {
+                document.getElementById('mControls').style.display = 'none';
+                document.getElementById('normalControls').style.display = 'block';
+                
+                document.getElementById('charPosX').value = settings.posX;
+                document.getElementById('charPosY').value = settings.posY;
+                document.getElementById('charPosXValue').textContent = settings.posX;
+                document.getElementById('charPosYValue').textContent = settings.posY;
+            }
+        }
+
+        // Save settings when user changes values
+        function saveCharSettings() {
+            const selectedChar = document.getElementById('selectedChar').value;
+            const settings = charSettings[selectedChar];
+            
+            settings.color = document.getElementById('charColor').value;
+            settings.color2 = document.getElementById('charColor2').value;
+            settings.gradientEnabled = document.getElementById('charGradientEnabled').checked;
+            document.getElementById('charGradientColor2Wrapper').style.display = settings.gradientEnabled ? 'block' : 'none';
+            settings.size = parseFloat(document.getElementById('charSize').value);
+            settings.font = document.getElementById('charFont').value;
+            settings.case = document.getElementById('charCase').value;
+            settings.stroke = document.getElementById('charStroke').value;
+            settings.strokeWidth = parseFloat(document.getElementById('charStrokeWidth').value);
+            
+            document.getElementById('charSizeValue').textContent = settings.size;
+            document.getElementById('charStrokeWidthValue').textContent = settings.strokeWidth;
+            
+            if (selectedChar === 'M') {
+                settings.circlePosX = parseFloat(document.getElementById('circlePosX').value);
+                settings.circlePosY = parseFloat(document.getElementById('circlePosY').value);
+                settings.mPosX = parseFloat(document.getElementById('mPosX').value);
+                settings.mPosY = parseFloat(document.getElementById('mPosY').value);
+                settings.circleStroke = document.getElementById('circleStroke').value;
+                settings.circleStrokeWidth = parseFloat(document.getElementById('circleStrokeWidth').value);
+                
+                document.getElementById('circlePosXValue').textContent = settings.circlePosX;
+                document.getElementById('circlePosYValue').textContent = settings.circlePosY;
+                document.getElementById('mPosXValue').textContent = settings.mPosX;
+                document.getElementById('mPosYValue').textContent = settings.mPosY;
+                document.getElementById('circleStrokeWidthValue').textContent = settings.circleStrokeWidth;
+            } else {
+                settings.posX = parseFloat(document.getElementById('charPosX').value);
+                settings.posY = parseFloat(document.getElementById('charPosY').value);
+                
+                document.getElementById('charPosXValue').textContent = settings.posX;
+                document.getElementById('charPosYValue').textContent = settings.posY;
+            }
+            
+            updateLogo();
+        }
+
+        // Update all previews
+        function updateLogo() {
+            const bgColor1 = document.getElementById('bgColor1').value;
+            const bgColor2 = document.getElementById('bgColor2').value;
+            const linStroke = document.getElementById('linStroke').value;
+            const mColor = document.getElementById('mColor').value;
+            const innerScale = parseFloat(document.getElementById('innerScale').value) / 100;
+            const innerOffsetX = parseFloat(document.getElementById('innerOffsetX').value);
+            const innerOffsetY = parseFloat(document.getElementById('innerOffsetY').value);
+
+            document.getElementById('innerScaleValue').textContent = Math.round(innerScale * 100);
+            document.getElementById('innerOffsetXValue').textContent = innerOffsetX;
+            document.getElementById('innerOffsetYValue').textContent = innerOffsetY;
+
+            // Calculate centered positions with scale and offset
+            const centerX = 54; // Center of 108px canvas
+            const centerY = 54;
+            
+            // Scale positions from center and apply offset
+            const lPosX = centerX + (charSettings.L.posX - centerX) * innerScale + innerOffsetX;
+            const lPosY = centerY + (charSettings.L.posY - centerY) * innerScale + innerOffsetY;
+            const iPosX = centerX + (charSettings.i.posX - centerX) * innerScale + innerOffsetX;
+            const iPosY = centerY + (charSettings.i.posY - centerY) * innerScale + innerOffsetY;
+            const nPosX = centerX + (charSettings.n.posX - centerX) * innerScale + innerOffsetX;
+            const nPosY = centerY + (charSettings.n.posY - centerY) * innerScale + innerOffsetY;
+            const circlePosX = centerX + (charSettings.M.circlePosX - centerX) * innerScale + innerOffsetX;
+            const circlePosY = centerY + (charSettings.M.circlePosY - centerY) * innerScale + innerOffsetY;
+
+            // Function to generate SVG content with unique prefix
+            function generateSvgContent(prefix) {
+                // Calculate gradient bounds for each character
+                const lGradY1 = lPosY - charSettings.L.size * innerScale * 0.8;
+                const lGradY2 = lPosY + charSettings.L.size * innerScale * 0.2;
+                const iGradY1 = iPosY - charSettings.i.size * innerScale * 0.8;
+                const iGradY2 = iPosY + charSettings.i.size * innerScale * 0.2;
+                const nGradY1 = nPosY - charSettings.n.size * innerScale * 0.8;
+                const nGradY2 = nPosY + charSettings.n.size * innerScale * 0.2;
+                const mGradY1 = circlePosY - charSettings.M.size * innerScale * 0.5;
+                const mGradY2 = circlePosY + charSettings.M.size * innerScale * 0.5;
+
+                return `
+                <!-- Background gradient -->
+                <defs>
+                    <linearGradient id="bgGradient_${prefix}" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:${bgColor1};stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:${bgColor2};stop-opacity:1" />
+                    </linearGradient>
+                    <!-- Character gradients (vertical) with userSpaceOnUse -->
+                    <linearGradient id="gradientL_${prefix}" gradientUnits="userSpaceOnUse" x1="${lPosX}" y1="${lGradY1}" x2="${lPosX}" y2="${lGradY2}">
+                        <stop offset="0%" style="stop-color:${charSettings.L.color};stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:${charSettings.L.color2};stop-opacity:1" />
+                    </linearGradient>
+                    <linearGradient id="gradienti_${prefix}" gradientUnits="userSpaceOnUse" x1="${iPosX}" y1="${iGradY1}" x2="${iPosX}" y2="${iGradY2}">
+                        <stop offset="0%" style="stop-color:${charSettings.i.color};stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:${charSettings.i.color2};stop-opacity:1" />
+                    </linearGradient>
+                    <linearGradient id="gradientn_${prefix}" gradientUnits="userSpaceOnUse" x1="${nPosX}" y1="${nGradY1}" x2="${nPosX}" y2="${nGradY2}">
+                        <stop offset="0%" style="stop-color:${charSettings.n.color};stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:${charSettings.n.color2};stop-opacity:1" />
+                    </linearGradient>
+                    <linearGradient id="gradientM_${prefix}" gradientUnits="userSpaceOnUse" x1="${circlePosX}" y1="${mGradY1}" x2="${circlePosX}" y2="${mGradY2}">
+                        <stop offset="0%" style="stop-color:${charSettings.M.color};stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:${charSettings.M.color2};stop-opacity:1" />
+                    </linearGradient>
+                    <filter id="shadow_${prefix}" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+                        <feOffset dx="0" dy="2" result="offsetblur"/>
+                        <feComponentTransfer>
+                            <feFuncA type="linear" slope="0.3"/>
+                        </feComponentTransfer>
+                        <feMerge>
+                            <feMergeNode/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                </defs>
+
+                <!-- Background with rounded corners -->
+                <rect width="108" height="108" fill="url(#bgGradient_${prefix})" rx="20" ry="20"/>
+
+                <!-- Chữ L -->
+                <text 
+                    x="${lPosX}" 
+                    y="${lPosY}" 
+                    font-family="${charSettings.L.font}"
+                    font-size="${charSettings.L.size * innerScale}" 
+                    font-weight="900"
+                    text-anchor="middle" 
+                    fill="${charSettings.L.gradientEnabled ? `url(#gradientL_${prefix})` : charSettings.L.color}"
+                    stroke="${charSettings.L.stroke}"
+                    stroke-width="${charSettings.L.strokeWidth * innerScale}"
+                    paint-order="stroke"
+                    filter="url(#shadow_${prefix})">${charSettings.L.case === 'upper' ? 'L' : 'l'}</text>
+
+                <!-- Chữ i (không có dấu chấm) -->
+                <text 
+                    x="${iPosX}" 
+                    y="${iPosY}" 
+                    font-family="${charSettings.i.font}"
+                    font-size="${charSettings.i.size * innerScale}" 
+                    font-weight="900"
+                    text-anchor="middle" 
+                    fill="${charSettings.i.gradientEnabled ? `url(#gradienti_${prefix})` : charSettings.i.color}"
+                    stroke="${charSettings.i.stroke}"
+                    stroke-width="${charSettings.i.strokeWidth * innerScale}"
+                    paint-order="stroke"
+                    filter="url(#shadow_${prefix})">${charSettings.i.case === 'upper' ? 'I' : 'i'}</text>
+
+                <!-- Chữ n -->
+                <text 
+                    x="${nPosX}" 
+                    y="${nPosY}" 
+                    font-family="${charSettings.n.font}"
+                    font-size="${charSettings.n.size * innerScale}" 
+                    font-weight="900"
+                    text-anchor="middle" 
+                    fill="${charSettings.n.gradientEnabled ? `url(#gradientn_${prefix})` : charSettings.n.color}"
+                    stroke="${charSettings.n.stroke}"
+                    stroke-width="${charSettings.n.strokeWidth * innerScale}"
+                    paint-order="stroke"
+                    filter="url(#shadow_${prefix})">${charSettings.n.case === 'upper' ? 'N' : 'n'}</text>
+
+                <!-- Circle with M - Dấu chấm của chữ i -->
+                <g transform="translate(${circlePosX}, ${circlePosY})">
+                    <circle 
+                        cx="${charSettings.M.size * innerScale / 2}" 
+                        cy="${charSettings.M.size * innerScale / 2}" 
+                        r="${charSettings.M.size * innerScale / 2}" 
+                        fill="${charSettings.M.gradientEnabled ? `url(#gradientM_${prefix})` : charSettings.M.color}"
+                        stroke="${charSettings.M.circleStroke}"
+                        stroke-width="${charSettings.M.circleStrokeWidth * innerScale}"
+                        filter="url(#shadow_${prefix})"/>
+                    <text 
+                        x="${charSettings.M.size * innerScale / 2 + charSettings.M.mPosX * innerScale}" 
+                        y="${charSettings.M.size * innerScale / 2 + charSettings.M.size * 0.35 * innerScale + charSettings.M.mPosY * innerScale}" 
+                        font-family="${charSettings.M.font}"
+                        font-size="${charSettings.M.size * 0.7 * innerScale}" 
+                        font-weight="bold"
+                        text-anchor="middle" 
+                        fill="${mColor}"
+                        stroke="${charSettings.M.stroke}"
+                        stroke-width="${charSettings.M.strokeWidth * innerScale}"
+                        paint-order="stroke">M</text>
+                </g>
+            `;
+            }
+
+            // Update all preview sizes with unique IDs
+            ['logo192', 'logo144', 'logo96', 'logo72', 'logo48', 'logo36'].forEach(id => {
+                document.getElementById(id).innerHTML = generateSvgContent(id);
+            });
+
+            // Update XML output
+            updateXMLOutput();
+            updateSettingsOutput();
+        }
+
+        function updateXMLOutput() {
+            const bgColor1 = document.getElementById('bgColor1').value;
+            const bgColor2 = document.getElementById('bgColor2').value;
+            const linStroke = document.getElementById('linStroke').value;
+            const mColor = document.getElementById('mColor').value;
+            const innerScale = parseFloat(document.getElementById('innerScale').value) / 100;
+            const innerOffsetX = parseFloat(document.getElementById('innerOffsetX').value);
+            const innerOffsetY = parseFloat(document.getElementById('innerOffsetY').value);
+            
+            // Calculate centered positions with scale and offset
+            const centerX = 54;
+            const centerY = 54;
+            
+            const lPosX = centerX + (charSettings.L.posX - centerX) * innerScale + innerOffsetX;
+            const lPosY = centerY + (charSettings.L.posY - centerY) * innerScale + innerOffsetY;
+            const iPosX = centerX + (charSettings.i.posX - centerX) * innerScale + innerOffsetX;
+            const iPosY = centerY + (charSettings.i.posY - centerY) * innerScale + innerOffsetY;
+            const nPosX = centerX + (charSettings.n.posX - centerX) * innerScale + innerOffsetX;
+            const nPosY = centerY + (charSettings.n.posY - centerY) * innerScale + innerOffsetY;
+            const circlePosX = centerX + (charSettings.M.circlePosX - centerX) * innerScale + innerOffsetX;
+            const circlePosY = centerY + (charSettings.M.circlePosY - centerY) * innerScale + innerOffsetY;
+            
+            // Calculate circle and M position with scale
+            const scaledMSize = charSettings.M.size * innerScale;
+            const mCx = (circlePosX + scaledMSize/2).toFixed(1);
+            const mCy = (circlePosY + scaledMSize/2).toFixed(1);
+            const mRadius = (scaledMSize/2).toFixed(1);
+            
+            // Simple path for M letter (scaled based on size)
+            const mSize = scaledMSize * 0.7;
+            const mX = circlePosX + scaledMSize/2 + charSettings.M.mPosX * innerScale;
+            const mY = circlePosY + scaledMSize/2 + charSettings.M.mPosY * innerScale;
+            const mPathData = `M${(mX - mSize*0.3).toFixed(1)},${(mY + mSize*0.3).toFixed(1)} L${(mX - mSize*0.3).toFixed(1)},${(mY - mSize*0.2).toFixed(1)} L${(mX - mSize*0.05).toFixed(1)},${(mY + mSize*0.05).toFixed(1)} L${(mX + mSize*0.05).toFixed(1)},${(mY + mSize*0.05).toFixed(1)} L${(mX + mSize*0.3).toFixed(1)},${(mY - mSize*0.2).toFixed(1)} L${(mX + mSize*0.3).toFixed(1)},${(mY + mSize*0.3).toFixed(1)} L${(mX + mSize*0.1).toFixed(1)},${(mY + mSize*0.3).toFixed(1)} L${(mX + mSize*0.1).toFixed(1)},${(mY).toFixed(1)} L${mX.toFixed(1)},${(mY + mSize*0.15).toFixed(1)} L${(mX - mSize*0.1).toFixed(1)},${(mY).toFixed(1)} L${(mX - mSize*0.1).toFixed(1)},${(mY + mSize*0.3).toFixed(1)} Z`;
+
+            // Generate simple block paths for L, i, N with scale
+            // L path - adjusted to match SVG text baseline
+            const lWidth = charSettings.L.size * 0.15 * innerScale;
+            const lHeight = charSettings.L.size * 0.7 * innerScale;
+            const lX = lPosX;
+            const lY = lPosY - charSettings.L.size * 0.1 * innerScale; // Adjust for text baseline
+            const lPath = `M${(lX - lWidth).toFixed(1)},${(lY - lHeight).toFixed(1)} L${(lX + lWidth).toFixed(1)},${(lY - lHeight).toFixed(1)} L${(lX + lWidth).toFixed(1)},${(lY).toFixed(1)} L${(lX + lWidth * 3).toFixed(1)},${(lY).toFixed(1)} L${(lX + lWidth * 3).toFixed(1)},${(lY + lWidth * 1.5).toFixed(1)} L${(lX - lWidth).toFixed(1)},${(lY + lWidth * 1.5).toFixed(1)} Z`;
+            
+            // i path (simple bar) - adjusted to match SVG text baseline
+            const iWidth = charSettings.i.size * 0.12 * innerScale;
+            const iHeight = charSettings.i.size * 0.7 * innerScale;
+            const iX = iPosX;
+            const iY = iPosY - charSettings.i.size * 0.35 * innerScale; // Adjust for text baseline (center vertically)
+            const iPath = `M${(iX - iWidth).toFixed(1)},${(iY - iHeight/2).toFixed(1)} L${(iX + iWidth).toFixed(1)},${(iY - iHeight/2).toFixed(1)} L${(iX + iWidth).toFixed(1)},${(iY + iHeight/2).toFixed(1)} L${(iX - iWidth).toFixed(1)},${(iY + iHeight/2).toFixed(1)} Z`;
+            
+            // N path (simplified trapezoid shape) - adjusted to match SVG text baseline
+            const nWidth = charSettings.n.size * 0.15 * innerScale;
+            const nHeight = charSettings.n.size * 0.7 * innerScale;
+            const nX = nPosX;
+            const nY = nPosY - charSettings.n.size * 0.1 * innerScale; // Adjust for text baseline
+            const nPath = `M${(nX - nWidth * 2).toFixed(1)},${(nY - nHeight).toFixed(1)} L${(nX - nWidth * 0.5).toFixed(1)},${(nY - nHeight).toFixed(1)} L${(nX - nWidth * 0.5).toFixed(1)},${(nY - nHeight * 0.3).toFixed(1)} L${(nX + nWidth * 0.5).toFixed(1)},${(nY - nHeight).toFixed(1)} L${(nX + nWidth * 2).toFixed(1)},${(nY - nHeight).toFixed(1)} L${(nX + nWidth * 2).toFixed(1)},${(nY).toFixed(1)} L${(nX + nWidth * 0.5).toFixed(1)},${(nY).toFixed(1)} L${(nX + nWidth * 0.5).toFixed(1)},${(nY - nHeight * 0.7).toFixed(1)} L${(nX - nWidth * 0.5).toFixed(1)},${(nY).toFixed(1)} L${(nX - nWidth * 2).toFixed(1)},${(nY).toFixed(1)} Z`;
+
+            const xml = `<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    
+    <!-- Character L -->
+    <path
+        android:fillColor="${charSettings.L.color}"
+        android:strokeColor="${charSettings.L.stroke}"
+        android:strokeWidth="${(charSettings.L.strokeWidth * innerScale).toFixed(1)}"
+        android:pathData="${lPath}"/>
+    
+    <!-- Character i -->
+    <path
+        android:fillColor="${charSettings.i.color}"
+        android:strokeColor="${charSettings.i.stroke}"
+        android:strokeWidth="${(charSettings.i.strokeWidth * innerScale).toFixed(1)}"
+        android:pathData="${iPath}"/>
+    
+    <!-- Character n -->
+    <path
+        android:fillColor="${charSettings.n.color}"
+        android:strokeColor="${charSettings.n.stroke}"
+        android:strokeWidth="${(charSettings.n.strokeWidth * innerScale).toFixed(1)}"
+        android:pathData="${nPath}"/>
+    
+    <!-- Circle with M (as path) -->
+    <path
+        android:fillColor="${charSettings.M.color}"
+        android:strokeColor="${charSettings.M.circleStroke}"
+        android:strokeWidth="${(charSettings.M.circleStrokeWidth * innerScale).toFixed(1)}"
+        android:pathData="M${mCx},${(parseFloat(mCy) - parseFloat(mRadius)).toFixed(1)} A${mRadius},${mRadius} 0 1,1 ${mCx},${(parseFloat(mCy) + parseFloat(mRadius)).toFixed(1)} A${mRadius},${mRadius} 0 1,1 ${mCx},${(parseFloat(mCy) - parseFloat(mRadius)).toFixed(1)} Z"/>
+    
+    <!-- M letter -->
+    <path
+        android:fillColor="${mColor}"
+        android:strokeColor="${charSettings.M.stroke}"
+        android:strokeWidth="${(charSettings.M.strokeWidth * innerScale).toFixed(1)}"
+        android:pathData="${mPathData}"/>
+</vector>`;
+
+            document.getElementById('xmlOutput').textContent = xml;
+            
+            // Update XML Preview (SVG with paths - same as XML)
+            const xmlPreviewSvg = `
+                <!-- Background -->
+                <defs>
+                    <linearGradient id="xmlBgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:${bgColor1};stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:${bgColor2};stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+                
+                <rect width="108" height="108" fill="url(#xmlBgGradient)" rx="20" ry="20"/>
+                
+                <!-- Character L -->
+                <path fill="${charSettings.L.color}" stroke="${charSettings.L.stroke}" stroke-width="${(charSettings.L.strokeWidth * innerScale).toFixed(1)}" d="${lPath}"/>
+                
+                <!-- Character i -->
+                <path fill="${charSettings.i.color}" stroke="${charSettings.i.stroke}" stroke-width="${(charSettings.i.strokeWidth * innerScale).toFixed(1)}" d="${iPath}"/>
+                
+                <!-- Character n -->
+                <path fill="${charSettings.n.color}" stroke="${charSettings.n.stroke}" stroke-width="${(charSettings.n.strokeWidth * innerScale).toFixed(1)}" d="${nPath}"/>
+                
+                <!-- Circle -->
+                <path fill="${charSettings.M.color}" stroke="${charSettings.M.circleStroke}" stroke-width="${(charSettings.M.circleStrokeWidth * innerScale).toFixed(1)}" d="M${mCx},${(parseFloat(mCy) - parseFloat(mRadius)).toFixed(1)} A${mRadius},${mRadius} 0 1,1 ${mCx},${(parseFloat(mCy) + parseFloat(mRadius)).toFixed(1)} A${mRadius},${mRadius} 0 1,1 ${mCx},${(parseFloat(mCy) - parseFloat(mRadius)).toFixed(1)} Z"/>
+                
+                <!-- M letter -->
+                <path fill="${mColor}" stroke="${charSettings.M.stroke}" stroke-width="${(charSettings.M.strokeWidth * innerScale).toFixed(1)}" d="${mPathData}"/>
+            `;
+            
+            ['xmlPreview192', 'xmlPreview96', 'xmlPreview48'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    // Replace gradient IDs with unique ones per SVG
+                    const uniqueContent = xmlPreviewSvg
+                        .replace(/id="xmlBgGradient"/g, `id="xmlBgGradient_${id}"`)
+                        .replace(/url\(#xmlBgGradient\)/g, `url(#xmlBgGradient_${id})`);
+                    el.innerHTML = uniqueContent;
+                }
+            });
+
+            // Update iOS Preview (same as XML Preview but for iOS sections)
+            ['iosPreview180', 'iosPreview120', 'iosPreview120_2', 'iosPreview87', 'iosPreview152', 'iosPreview76', 'iosPreview167', 'iosPreview1024'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    // Create iOS-style content (rounded corners)
+                    const iosRadius = id === 'iosPreview1024' ? '22' : '18'; // Larger radius for App Store icon
+                    const iosContent = `
+                        <!-- Background -->
+                        <defs>
+                            <linearGradient id="iosBgGradient_${id}" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0%" stop-color="${bgColor1}" stop-opacity="1" />
+                                <stop offset="100%" stop-color="${bgColor2}" stop-opacity="1" />
+                            </linearGradient>
+                        </defs>
+                        
+                        <rect width="108" height="108" fill="url(#iosBgGradient_${id})" rx="${iosRadius}" ry="${iosRadius}"/>
+                        
+                        <!-- Character L -->
+                        <path fill="${charSettings.L.color}" stroke="${charSettings.L.stroke}" stroke-width="${(charSettings.L.strokeWidth * innerScale).toFixed(1)}" d="${lPath}"/>
+                        
+                        <!-- Character i -->
+                        <path fill="${charSettings.i.color}" stroke="${charSettings.i.stroke}" stroke-width="${(charSettings.i.strokeWidth * innerScale).toFixed(1)}" d="${iPath}"/>
+                        
+                        <!-- Character n -->
+                        <path fill="${charSettings.n.color}" stroke="${charSettings.n.stroke}" stroke-width="${(charSettings.n.strokeWidth * innerScale).toFixed(1)}" d="${nPath}"/>
+                        
+                        <!-- Circle -->
+                        <path fill="${charSettings.M.color}" stroke="${charSettings.M.circleStroke}" stroke-width="${(charSettings.M.circleStrokeWidth * innerScale).toFixed(1)}" d="M${mCx},${(parseFloat(mCy) - parseFloat(mRadius)).toFixed(1)} A${mRadius},${mRadius} 0 1,1 ${mCx},${(parseFloat(mCy) + parseFloat(mRadius)).toFixed(1)} A${mRadius},${mRadius} 0 1,1 ${mCx},${(parseFloat(mCy) - parseFloat(mRadius)).toFixed(1)} Z"/>
+                        
+                        <!-- M letter -->
+                        <path fill="${mColor}" stroke="${charSettings.M.stroke}" stroke-width="${(charSettings.M.strokeWidth * innerScale).toFixed(1)}" d="${mPathData}"/>
+                    `;
+                    el.innerHTML = iosContent;
+                }
+            });
+        }
+
+        function applyPreset(preset) {
+            const presets = {
+                // Original vibrant presets
+                purple: { bg1: '#667eea', bg2: '#764ba2', lin: '#FFFFFF', stroke: '#4a5fd9', circle: '#D84343', m: '#FFFFFF' },
+                pink: { bg1: '#f093fb', bg2: '#f5576c', lin: '#FFFFFF', stroke: '#d43f50', circle: '#FF6B9D', m: '#FFFFFF' },
+                blue: { bg1: '#4facfe', bg2: '#00f2fe', lin: '#FFFFFF', stroke: '#0077cc', circle: '#0066CC', m: '#FFFFFF' },
+                green: { bg1: '#43e97b', bg2: '#38f9d7', lin: '#FFFFFF', stroke: '#2ba55d', circle: '#00C853', m: '#FFFFFF' },
+                
+                // Professional & Corporate presets
+                corporate: { bg1: '#1e3c72', bg2: '#2a5298', lin: '#FFFFFF', stroke: '#0f1f3a', circle: '#E63946', m: '#FFFFFF' },
+                professional: { bg1: '#2c3e50', bg2: '#34495e', lin: '#FFFFFF', stroke: '#1a252f', circle: '#3498DB', m: '#FFFFFF' },
+                executive: { bg1: '#0f2027', bg2: '#2c5364', lin: '#FFFFFF', stroke: '#000000', circle: '#C0392B', m: '#FFFFFF' },
+                business: { bg1: '#134e5e', bg2: '#71b280', lin: '#FFFFFF', stroke: '#0a2f3c', circle: '#27AE60', m: '#FFFFFF' },
+                
+                // Modern Professional presets
+                tech: { bg1: '#283c86', bg2: '#45a247', lin: '#FFFFFF', stroke: '#162449', circle: '#F39C12', m: '#FFFFFF' },
+                navy: { bg1: '#000428', bg2: '#004e92', lin: '#FFFFFF', stroke: '#000000', circle: '#E74C3C', m: '#FFFFFF' },
+                modern: { bg1: '#232526', bg2: '#414345', lin: '#FFFFFF', stroke: '#000000', circle: '#E67E22', m: '#FFFFFF' },
+                elegant: { bg1: '#654ea3', bg2: '#eaafc8', lin: '#FFFFFF', stroke: '#4a3878', circle: '#9B59B6', m: '#FFFFFF' },
+                
+                // Premium & Clean presets
+                premium: { bg1: '#c31432', bg2: '#240b36', lin: '#FFFFFF', stroke: '#8b0f24', circle: '#FFC107', m: '#1a1a1a' },
+                clean: { bg1: '#00b4db', bg2: '#0083b0', lin: '#FFFFFF', stroke: '#005f7f', circle: '#FF5722', m: '#FFFFFF' },
+                classic: { bg1: '#2b5876', bg2: '#4e4376', lin: '#FFFFFF', stroke: '#1a3549', circle: '#D32F2F', m: '#FFFFFF' },
+                fresh: { bg1: '#1c92d2', bg2: '#f2fcfe', lin: '#1a1a1a', stroke: '#0d4a6b', circle: '#00BCD4', m: '#FFFFFF' },
+                
+                // Software & Tech themes
+                software: { bg1: '#0f0c29', bg2: '#24243e', lin: '#00F5FF', stroke: '#0080FF', circle: '#FF1744', m: '#FFFFFF' },
+                codeDark: { bg1: '#141e30', bg2: '#243b55', lin: '#FFFFFF', stroke: '#0a0f19', circle: '#FF4081', m: '#FFFFFF' },
+                cyberpunk: { bg1: '#2193b0', bg2: '#6dd5ed', lin: '#FFFFFF', stroke: '#0d4a5e', circle: '#E91E63', m: '#FFFFFF' },
+                devOps: { bg1: '#ee0979', bg2: '#ff6a00', lin: '#FFFFFF', stroke: '#940052', circle: '#00E676', m: '#1a1a1a' },
+                cloudBlue: { bg1: '#00c6ff', bg2: '#0072ff', lin: '#FFFFFF', stroke: '#003d82', circle: '#FFC107', m: '#1a1a1a' },
+                ultraViolet: { bg1: '#8e2de2', bg2: '#4a00e0', lin: '#FFFFFF', stroke: '#2d007a', circle: '#00E5FF', m: '#FFFFFF' },
+                stackoverflow: { bg1: '#0b486b', bg2: '#f56217', lin: '#FFFFFF', stroke: '#05242e', circle: '#F48024', m: '#FFFFFF' },
+                gradient3: { bg1: '#12c2e9', bg2: '#f64f59', lin: '#FFFFFF', stroke: '#0a7a94', circle: '#FF6F00', m: '#FFFFFF' },
+                
+                // Developer inspired
+                vscode: { bg1: '#1e272e', bg2: '#485460', lin: '#00D9FF', stroke: '#0a1114', circle: '#FF6B6B', m: '#FFFFFF' },
+                github: { bg1: '#24292e', bg2: '#2f363d', lin: '#FFFFFF', stroke: '#0d1117', circle: '#F97316', m: '#FFFFFF' },
+                intellij: { bg1: '#667db6', bg2: '#0082c8', lin: '#FFFFFF', stroke: '#3a4a6b', circle: '#FF4757', m: '#FFFFFF' },
+                terminal: { bg1: '#434343', bg2: '#000000', lin: '#00FF00', stroke: '#1a1a1a', circle: '#FFFF00', m: '#000000' },
+                android: { bg1: '#16a085', bg2: '#f4d03f', lin: '#FFFFFF', stroke: '#0a5042', circle: '#3DDC84', m: '#1a1a1a' },
+                windows: { bg1: '#00d2ff', bg2: '#3a7bd5', lin: '#FFFFFF', stroke: '#006b82', circle: '#0078D4', m: '#FFFFFF' },
+                firebase: { bg1: '#f2994a', bg2: '#f2c94c', lin: '#1a1a1a', stroke: '#b86f2d', circle: '#FFCA28', m: '#1a1a1a' },
+                gitlab: { bg1: '#fc4a1a', bg2: '#f7b733', lin: '#FFFFFF', stroke: '#a02f11', circle: '#FCA326', m: '#1a1a1a' }
+            };
+
+            const p = presets[preset];
+            document.getElementById('bgColor1').value = p.bg1;
+            document.getElementById('bgColor2').value = p.bg2;
+            document.getElementById('linStroke').value = p.stroke;
+            document.getElementById('mColor').value = p.m;
+            
+            // Apply color to all characters
+            charSettings.L.color = p.lin;
+            charSettings.i.color = p.lin;
+            charSettings.n.color = p.lin;
+            charSettings.M.color = p.circle;
+            
+            // Update current character display if on character editor
+            const selectedChar = document.getElementById('selectedChar').value;
+            if (selectedChar === 'M') {
+                document.getElementById('charColor').value = p.circle;
+            } else {
+                document.getElementById('charColor').value = p.lin;
+            }
+            
+            updateLogo();
+        }
+        
+        function applyCharColor(color) {
+            const selectedChar = document.getElementById('selectedChar').value;
+            charSettings[selectedChar].color = color;
+            charSettings[selectedChar].gradientEnabled = false;
+            document.getElementById('charColor').value = color;
+            document.getElementById('charGradientEnabled').checked = false;
+            document.getElementById('charGradientColor2Wrapper').style.display = 'none';
+            updateLogo();
+        }
+        
+        function applyCharGradient(color1, color2) {
+            const selectedChar = document.getElementById('selectedChar').value;
+            charSettings[selectedChar].color = color1;
+            charSettings[selectedChar].color2 = color2;
+            charSettings[selectedChar].gradientEnabled = true;
+            document.getElementById('charColor').value = color1;
+            document.getElementById('charColor2').value = color2;
+            document.getElementById('charGradientEnabled').checked = true;
+            document.getElementById('charGradientColor2Wrapper').style.display = 'block';
+            updateLogo();
+        }
+        
+        function toggleLogoPreview() {
+            const grid = document.getElementById('logoPreviewGrid');
+            const toggle = document.getElementById('logoPreviewToggle');
+            if (grid.style.display === 'none') {
+                grid.style.display = 'grid';
+                toggle.textContent = '▼ Hide';
+            } else {
+                grid.style.display = 'none';
+                toggle.textContent = '▶ Show';
+            }
+        }
+        
+        function updateSettingsOutput() {
+            const selectedApp = document.getElementById('appSelect').value;
+            const bgColor1 = document.getElementById('bgColor1').value;
+            const bgColor2 = document.getElementById('bgColor2').value;
+            const linStroke = document.getElementById('linStroke').value;
+            const mColor = document.getElementById('mColor').value;
+            const innerScale = document.getElementById('innerScale').value;
+            const innerOffsetX = document.getElementById('innerOffsetX').value;
+            const innerOffsetY = document.getElementById('innerOffsetY').value;
+            
+            const allSettings = {
+                app: selectedApp,
+                background: {
+                    color1: bgColor1,
+                    color2: bgColor2
+                },
+                globalSettings: {
+                    linStroke: linStroke,
+                    mColor: mColor,
+                    innerScale: parseFloat(innerScale),
+                    innerOffsetX: parseFloat(innerOffsetX),
+                    innerOffsetY: parseFloat(innerOffsetY)
+                },
+                characters: {
+                    L: { ...charSettings.L },
+                    i: { ...charSettings.i },
+                    n: { ...charSettings.n },
+                    M: { ...charSettings.M }
+                }
+            };
+            
+            document.getElementById('settingsOutput').textContent = JSON.stringify(allSettings, null, 2);
+        }
+        
+        function copySettingsToClipboard(event) {
+            const settingsText = document.getElementById('settingsOutput').textContent;
+            const selectedApp = document.getElementById('appSelect').value;
+            const prompt = `Update logo designer settings for app "${selectedApp}" in current project file: logo-designer.html
+
+Apply these settings:
+${settingsText}`;
+            
+            navigator.clipboard.writeText(prompt).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Copied!';
+                btn.style.background = 'linear-gradient(135deg, #43e97b, #38f9d7)';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = 'linear-gradient(135deg, #667eea, #764ba2)';
+                }, 2000);
+            }).catch(err => {
+                alert('Failed to copy: ' + err);
+            });
+        }
+
+        function exportToXML() {
+            const xml = document.getElementById('xmlOutput').textContent;
+            const blob = new Blob([xml], { type: 'text/xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'ic_launcher_foreground_lin.xml';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function downloadSVG() {
+            const svg = document.getElementById('logo192').outerHTML;
+            const fullSVG = `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+${svg}`;
+            const blob = new Blob([fullSVG], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'lin_logo.svg';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        function downloadAndroidFiles() {
+            const bgColor1 = document.getElementById('bgColor1').value;
+            const bgColor2 = document.getElementById('bgColor2').value;
+            const vectorXML = document.getElementById('xmlOutput').textContent;
+            
+            const gradientXML = `<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:angle="135"
+        android:startColor="${bgColor1}"
+        android:endColor="${bgColor2}"
+        android:type="linear" />
+</shape>`;
+
+            const launcherXML = `<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@drawable/ic_launcher_background_gradient"/>
+    <foreground android:drawable="@drawable/ic_launcher_foreground"/>
+</adaptive-icon>`;
+            
+            // Create ZIP file
+            const zip = new JSZip();
+            zip.file("drawable/ic_launcher_foreground.xml", vectorXML);
+            zip.file("drawable/ic_launcher_background_gradient.xml", gradientXML);
+            zip.file("mipmap-anydpi-v26/ic_launcher.xml", launcherXML);
+            zip.file("mipmap-anydpi-v26/ic_launcher_round.xml", launcherXML);
+            
+            // Generate and download ZIP
+            zip.generateAsync({type:"blob"}).then(function(content) {
+                const selectedApp = document.getElementById('appSelect').value;
+                const now = new Date();
+                const datetime = now.getFullYear().toString() + 
+                    String(now.getMonth() + 1).padStart(2, '0') + 
+                    String(now.getDate()).padStart(2, '0') + '-' +
+                    String(now.getHours()).padStart(2, '0') + 
+                    String(now.getMinutes()).padStart(2, '0') + 
+                    String(now.getSeconds()).padStart(2, '0');
+                const fileName = `${selectedApp}-icon-${datetime}.zip`;
+                
+                const url = URL.createObjectURL(content);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                // Show instructions
+                const appAndroidPaths = {
+                    'smart-call-block': 'Source\\smart-call-block\\ANDROID\\app\\src\\main\\res',
+                    'quick-snooze': 'Source\\quick-snooze\\ANDROID\\app\\src\\main\\res',
+                    'daily-speak': 'Source\\daily-speak\\ANDROID\\app\\src\\main\\res'
+                };
+                
+                const androidPath = appAndroidPaths[selectedApp] || `Source\\${selectedApp}\\ANDROID\\app\\src\\main\\res`;
+                
+                alert(`✅ Đã download: ${fileName}
+
+HƯỚNG DẪN SỬ DỤNG ANDROID:
+=========================
+1. Giải nén file ZIP
+2. Copy 2 thư mục vào:
+   ${androidPath}
+   - drawable/
+   - mipmap-anydpi-v26/
+3. Hoặc copy trực tiếp vào Android Studio project:
+   - Mở Android Studio
+   - Navigate đến app/src/main/res/
+   - Copy 2 thư mục vào đây
+4. Chọn "Replace/Overwrite" khi được hỏi
+5. Build > Clean Project
+6. Build > Rebuild Project
+7. Run app!
+
+ĐƯỜNG DẪN CỤ THỂ:
+${androidPath}
+
+XONG! Logo Android mới đã được cập nhật.`);
+            });
+        }
+
+        function downloadIOSFiles() {
+            const selectedApp = document.getElementById('appSelect').value;
+            const now = new Date();
+            const datetime = now.getFullYear().toString() + 
+                String(now.getMonth() + 1).padStart(2, '0') + 
+                String(now.getDate()).padStart(2, '0') + '-' +
+                String(now.getHours()).padStart(2, '0') + 
+                String(now.getMinutes()).padStart(2, '0') + 
+                String(now.getSeconds()).padStart(2, '0');
+            
+            // iOS icon sizes according to Apple guidelines
+            const iosSizes = [
+                { size: 20, scale: 1, folder: '', name: 'Icon-20' },
+                { size: 20, scale: 2, folder: '', name: 'Icon-20@2x' },
+                { size: 20, scale: 3, folder: '', name: 'Icon-20@3x' },
+                { size: 29, scale: 1, folder: '', name: 'Icon-29' },
+                { size: 29, scale: 2, folder: '', name: 'Icon-29@2x' },
+                { size: 29, scale: 3, folder: '', name: 'Icon-29@3x' },
+                { size: 40, scale: 1, folder: '', name: 'Icon-40' },
+                { size: 40, scale: 2, folder: '', name: 'Icon-40@2x' },
+                { size: 40, scale: 3, folder: '', name: 'Icon-40@3x' },
+                { size: 60, scale: 2, folder: '', name: 'Icon-60@2x' },
+                { size: 60, scale: 3, folder: '', name: 'Icon-60@3x' },
+                { size: 76, scale: 1, folder: '', name: 'Icon-76' },
+                { size: 76, scale: 2, folder: '', name: 'Icon-76@2x' },
+                { size: 83.5, scale: 2, folder: '', name: 'Icon-83.5@2x' },
+                { size: 1024, scale: 1, folder: '', name: 'Icon-1024' }
+            ];
+            
+            const zip = new JSZip();
+            
+            // Generate SVG content for iOS icons
+            function generateIOSSVG() {
+                const bgColor1 = document.getElementById('bgColor1').value || '#4facfe';
+                const bgColor2 = document.getElementById('bgColor2').value || '#00f2fe';
+                const linStroke = document.getElementById('linStroke').value || '#0077cc';
+                const mColor = document.getElementById('mColor').value || '#ea1b8d';
+                
+                if (!charSettings) {
+                    // Fallback character settings if not loaded
+                    loadCharSettings();
+                }
+                
+                const innerScale = parseFloat(document.getElementById('innerScale').value || 60) / 100;
+                const innerOffsetX = parseFloat(document.getElementById('innerOffsetX').value || -4);
+                const innerOffsetY = parseFloat(document.getElementById('innerOffsetY').value || 2);
+                
+                // Calculate centered positions with scale and offset
+                const centerX = 54;
+                const centerY = 54;
+                
+                const lPosX = centerX + (charSettings.L.posX - centerX) * innerScale + innerOffsetX;
+                const lPosY = centerY + (charSettings.L.posY - centerY) * innerScale + innerOffsetY;
+                const iPosX = centerX + (charSettings.i.posX - centerX) * innerScale + innerOffsetX;
+                const iPosY = centerY + (charSettings.i.posY - centerY) * innerScale + innerOffsetY;
+                const nPosX = centerX + (charSettings.n.posX - centerX) * innerScale + innerOffsetX;
+                const nPosY = centerY + (charSettings.n.posY - centerY) * innerScale + innerOffsetY;
+                
+                return `<svg width="108" height="108" viewBox="0 0 108 108" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="${bgColor1}"/>
+                            <stop offset="100%" stop-color="${bgColor2}"/>
+                        </linearGradient>
+                    </defs>
+                    <rect width="108" height="108" fill="url(#bgGradient)" rx="22"/>
+                    
+                    <!-- Character L -->
+                    <text x="${lPosX}" y="${lPosY}" font-family="${charSettings.L.font || 'sans-serif'}" 
+                          font-size="${charSettings.L.size * innerScale}" fill="${charSettings.L.color}" 
+                          stroke="${charSettings.L.stroke}" stroke-width="${charSettings.L.strokeWidth * innerScale}"
+                          font-weight="bold" text-anchor="middle" dominant-baseline="central">L</text>
+                    
+                    <!-- Character i -->
+                    <text x="${iPosX}" y="${iPosY}" font-family="${charSettings.i.font || 'sans-serif'}" 
+                          font-size="${charSettings.i.size * innerScale}" fill="${charSettings.i.color}" 
+                          stroke="${charSettings.i.stroke}" stroke-width="${charSettings.i.strokeWidth * innerScale}"
+                          font-weight="bold" text-anchor="middle" dominant-baseline="central">i</text>
+                    
+                    <!-- Character n -->
+                    <text x="${nPosX}" y="${nPosY}" font-family="${charSettings.n.font || 'sans-serif'}" 
+                          font-size="${charSettings.n.size * innerScale}" fill="${charSettings.n.color}" 
+                          stroke="${charSettings.n.stroke}" stroke-width="${charSettings.n.strokeWidth * innerScale}"
+                          font-weight="bold" text-anchor="middle" dominant-baseline="central">n</text>
+                    
+                    <!-- M Circle and Letter -->
+                    <circle cx="${centerX + (charSettings.M.circlePosX - centerX) * innerScale + innerOffsetX + charSettings.M.size * innerScale / 2}"
+                            cy="${centerY + (charSettings.M.circlePosY - centerY) * innerScale + innerOffsetY + charSettings.M.size * innerScale / 2}"
+                            r="${charSettings.M.size * innerScale / 2}" 
+                            fill="${charSettings.M.color}" 
+                            stroke="${charSettings.M.circleStroke}" 
+                            stroke-width="${charSettings.M.circleStrokeWidth * innerScale}"/>
+                    
+                    <text x="${centerX + (charSettings.M.circlePosX - centerX) * innerScale + innerOffsetX + charSettings.M.size * innerScale / 2 + charSettings.M.mPosX * innerScale}"
+                          y="${centerY + (charSettings.M.circlePosY - centerY) * innerScale + innerOffsetY + charSettings.M.size * innerScale / 2 + charSettings.M.mPosY * innerScale}"
+                          font-family="${charSettings.M.font || 'sans-serif'}" 
+                          font-size="${charSettings.M.size * innerScale * 0.7}" 
+                          fill="${mColor}" 
+                          stroke="${charSettings.M.stroke}" 
+                          stroke-width="${charSettings.M.strokeWidth * innerScale}"
+                          font-weight="bold" text-anchor="middle" dominant-baseline="central">M</text>
+                </svg>`;
+            }
+            
+            // Create a promise for each icon size
+            const iconPromises = iosSizes.map(iconConfig => {
+                return new Promise((resolve, reject) => {
+                    try {
+                        const actualSize = Math.floor(iconConfig.size * iconConfig.scale);
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = actualSize;
+                        canvas.height = actualSize;
+                        
+                        // Clear canvas
+                        ctx.clearRect(0, 0, actualSize, actualSize);
+                        
+                        // Generate SVG content
+                        const svgContent = generateIOSSVG();
+                        const svgBlob = new Blob([svgContent], {type: 'image/svg+xml;charset=utf-8'});
+                        const svgUrl = URL.createObjectURL(svgBlob);
+                        
+                        // Create image from SVG
+                        const img = new Image();
+                        img.onload = function() {
+                            try {
+                                // Draw the image on canvas with proper scaling
+                                ctx.drawImage(img, 0, 0, actualSize, actualSize);
+                                
+                                // Convert canvas to PNG blob
+                                canvas.toBlob(function(blob) {
+                                    if (blob) {
+                                        const fileName = `AppIcon.appiconset/${iconConfig.name}.png`;
+                                        zip.file(fileName, blob);
+                                        URL.revokeObjectURL(svgUrl);
+                                        resolve();
+                                    } else {
+                                        reject(new Error('Failed to create blob'));
+                                    }
+                                }, 'image/png');
+                            } catch (error) {
+                                URL.revokeObjectURL(svgUrl);
+                                reject(error);
+                            }
+                        };
+                        img.onerror = function() {
+                            URL.revokeObjectURL(svgUrl);
+                            reject(new Error('Failed to load SVG image'));
+                        };
+                        img.src = svgUrl;
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
+            });
+            
+            // Wait for all icons to be generated
+            Promise.all(iconPromises).then(() => {
+                // Create Contents.json for iOS
+                const contentsJson = {
+                    "images": [
+                        { "size": "20x20", "idiom": "iphone", "filename": "Icon-20@2x.png", "scale": "2x" },
+                        { "size": "20x20", "idiom": "iphone", "filename": "Icon-20@3x.png", "scale": "3x" },
+                        { "size": "29x29", "idiom": "iphone", "filename": "Icon-29@2x.png", "scale": "2x" },
+                        { "size": "29x29", "idiom": "iphone", "filename": "Icon-29@3x.png", "scale": "3x" },
+                        { "size": "40x40", "idiom": "iphone", "filename": "Icon-40@2x.png", "scale": "2x" },
+                        { "size": "40x40", "idiom": "iphone", "filename": "Icon-40@3x.png", "scale": "3x" },
+                        { "size": "60x60", "idiom": "iphone", "filename": "Icon-60@2x.png", "scale": "2x" },
+                        { "size": "60x60", "idiom": "iphone", "filename": "Icon-60@3x.png", "scale": "3x" },
+                        { "size": "20x20", "idiom": "ipad", "filename": "Icon-20.png", "scale": "1x" },
+                        { "size": "20x20", "idiom": "ipad", "filename": "Icon-20@2x.png", "scale": "2x" },
+                        { "size": "29x29", "idiom": "ipad", "filename": "Icon-29.png", "scale": "1x" },
+                        { "size": "29x29", "idiom": "ipad", "filename": "Icon-29@2x.png", "scale": "2x" },
+                        { "size": "40x40", "idiom": "ipad", "filename": "Icon-40.png", "scale": "1x" },
+                        { "size": "40x40", "idiom": "ipad", "filename": "Icon-40@2x.png", "scale": "2x" },
+                        { "size": "76x76", "idiom": "ipad", "filename": "Icon-76.png", "scale": "1x" },
+                        { "size": "76x76", "idiom": "ipad", "filename": "Icon-76@2x.png", "scale": "2x" },
+                        { "size": "83.5x83.5", "idiom": "ipad", "filename": "Icon-83.5@2x.png", "scale": "2x" },
+                        { "size": "1024x1024", "idiom": "ios-marketing", "filename": "Icon-1024.png", "scale": "1x" }
+                    ],
+                    "info": {
+                        "version": 1,
+                        "author": "Linm Logo Designer"
+                    }
+                };
+                
+                zip.file("AppIcon.appiconset/Contents.json", JSON.stringify(contentsJson, null, 2));
+                
+                // Generate and download ZIP
+                zip.generateAsync({type:"blob"}).then(function(content) {
+                    const fileName = `${selectedApp}-ios-icons-${datetime}.zip`;
+                    
+                    const url = URL.createObjectURL(content);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    
+                    // Show instructions
+                    const appPaths = {
+                        'smart-call-block': 'Source\\smart-call-block\\IOS\\SmartCallBlock\\Assets.xcassets',
+                        'quick-snooze': 'Source\\quick-snooze\\IOS\\QuickSnooze\\Assets.xcassets',
+                        'daily-speak': 'Source\\daily-speak\\IOS\\DailySpeak\\Assets.xcassets'
+                    };
+                    
+                    const appPath = appPaths[selectedApp] || `Source\\${selectedApp}\\IOS\\${selectedApp}\\Assets.xcassets`;
+                    
+                    alert(`✅ Đã download: ${fileName}
+
+HƯỚNG DẪN SỬ DỤNG iOS:
+=====================
+1. Giải nén file ZIP
+2. Copy folder "AppIcon.appiconset" vào:
+   ${appPath}
+3. Hoặc mở Xcode project:
+   - Vào Assets.xcassets 
+   - Xóa AppIcon hiện tại (nếu có)
+   - Drag & drop folder "AppIcon.appiconset" vào Assets.xcassets
+4. Build & Run app!
+
+ĐƯỜNG DẪN CỤ THỂ:
+${appPath}
+
+XONG! Logo iOS mới đã được cập nhật.
+
+Gồm đầy đủ sizes:
+- iPhone: 20pt-60pt (all scales)
+- iPad: 20pt-83.5pt (all scales)  
+- App Store: 1024x1024`);
+                }).catch(error => {
+                    console.error('Error generating ZIP:', error);
+                    alert('❌ Lỗi khi tạo file ZIP. Vui lòng thử lại.');
+                });
+            }).catch(error => {
+                console.error('Error generating iOS icons:', error);
+                alert('❌ Lỗi khi tạo iOS icons. Vui lòng kiểm tra lại settings và thử lại.');
+            });
+        }
+
+        function copyToClipboard() {
+            const xml = document.getElementById('xmlOutput').textContent;
+            navigator.clipboard.writeText(xml).then(() => {
+                alert('✅ Đã copy XML vào clipboard!');
+            });
+        }
+
+        // Event listeners
+        document.querySelectorAll('input[type="color"], input[type="range"]').forEach(input => {
+            if (input.id === 'charColor' || input.id === 'charColor2' || input.id === 'charSize' || input.id === 'charPosX' || input.id === 'charPosY' || input.id === 'charStroke' || input.id === 'charStrokeWidth' ||
+                input.id === 'circlePosX' || input.id === 'circlePosY' || input.id === 'mPosX' || input.id === 'mPosY' || input.id === 'circleStroke' || input.id === 'circleStrokeWidth') {
+                input.addEventListener('input', saveCharSettings);
+            } else {
+                input.addEventListener('input', updateLogo);
+            }
+        });
+        
+        document.getElementById('charFont').addEventListener('change', saveCharSettings);
+        document.getElementById('charCase').addEventListener('change', saveCharSettings);
+        document.getElementById('charGradientEnabled').addEventListener('change', saveCharSettings);
+        document.getElementById('selectedChar').addEventListener('change', loadCharSettings);
+
+        // Initial render
+        loadThemeFromApp(currentApp);
+        loadCharSettings();
+        updateLogo();
+    </script>
+</body>
+</html>
