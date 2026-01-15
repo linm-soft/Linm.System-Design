@@ -531,7 +531,7 @@
 
                 <div class="control-group">
                     <label>Padding: <span class="range-value" id="paddingValue">0</span>px</label>
-                    <input type="range" id="padding" min="0" max="100" value="0" step="5">
+                    <input type="range" id="padding" min="0" max="100" value="0" step="1">
                 </div>
 
                 <div class="control-group">
@@ -587,6 +587,15 @@
                             <div style="display: flex; justify-content: center;" id="iosAppStoreGrid">
                                 <!-- App Store icon will be generated here -->
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Selected icon preview -->
+                    <div style="display: flex; gap: 12px; align-items: center; margin-top: 15px;">
+                        <img id="selectedIcon" width="60" height="60" style="border-radius:12px; background:#fff; border:1px solid #e0e0e0;" alt="Selected icon">
+                        <div>
+                            <div style="font-weight:700">Selected Icon</div>
+                            <div id="selectedIconLabel" style="font-size:12px; color:#666;">—</div>
                         </div>
                     </div>
                     
@@ -686,19 +695,31 @@
     </div>
 
     <script>
-        // Icon sizes for each platform - Match logo-designer exactly (8 icons)
+        // Full iOS icon set (standardized filenames: Icon-App-<point>x<point>@<scale>[-ipad].png)
         const iosSizes = [
-            // iPhone Icons - 4 items (display sizes: 60, 48, 40, 29 px)
-            { size: 180, name: '60pt @3x', filename: 'icon-180.png', category: 'iphone', displaySize: 60 },
-            { size: 120, name: '60pt @2x', filename: 'icon-120.png', category: 'iphone', displaySize: 48 },
-            { size: 120, name: '40pt @3x', filename: 'icon-120-alt.png', category: 'iphone', displaySize: 40 },
-            { size: 87, name: '29pt @3x', filename: 'icon-87.png', category: 'iphone', displaySize: 29 },
-            // iPad Icons - 3 items (display sizes: 60, 48, 55 px)
-            { size: 152, name: '76pt @2x', filename: 'icon-152.png', category: 'ipad', displaySize: 60 },
-            { size: 76, name: '76pt @1x', filename: 'icon-76.png', category: 'ipad', displaySize: 48 },
-            { size: 167, name: '83.5pt @2x', filename: 'icon-167.png', category: 'ipad', displaySize: 55 },
-            // App Store - 1 item (display size: 80 px)
-            { size: 1024, name: '1024x1024', filename: 'icon-1024.png', category: 'appstore', displaySize: 80 }
+            // iPhone icons (notifications, settings, spotlight, app icons)
+            { size: 40, pointSize: 20, scale: '2x', name: '20pt @2x', filename: 'Icon-App-20x20@2x.png', idiom: 'iphone', displaySize: 26 },
+            { size: 60, pointSize: 20, scale: '3x', name: '20pt @3x', filename: 'Icon-App-20x20@3x.png', idiom: 'iphone', displaySize: 34 },
+            { size: 58, pointSize: 29, scale: '2x', name: '29pt @2x', filename: 'Icon-App-29x29@2x.png', idiom: 'iphone', displaySize: 26 },
+            { size: 87, pointSize: 29, scale: '3x', name: '29pt @3x', filename: 'Icon-App-29x29@3x.png', idiom: 'iphone', displaySize: 30 },
+            { size: 80, pointSize: 40, scale: '2x', name: '40pt @2x', filename: 'Icon-App-40x40@2x.png', idiom: 'iphone', displaySize: 32 },
+            { size: 120, pointSize: 40, scale: '3x', name: '40pt @3x', filename: 'Icon-App-40x40@3x.png', idiom: 'iphone', displaySize: 40 },
+            { size: 120, pointSize: 60, scale: '2x', name: '60pt @2x', filename: 'Icon-App-60x60@2x.png', idiom: 'iphone', displaySize: 40 },
+            { size: 180, pointSize: 60, scale: '3x', name: '60pt @3x', filename: 'Icon-App-60x60@3x.png', idiom: 'iphone', displaySize: 48 },
+
+            // iPad icons
+            { size: 20, pointSize: 20, scale: '1x', name: '20pt @1x', filename: 'Icon-App-20x20.png', idiom: 'ipad', displaySize: 18 },
+            { size: 40, pointSize: 20, scale: '2x', name: '20pt @2x', filename: 'Icon-App-20x20@2x.png', idiom: 'ipad', displaySize: 26 },
+            { size: 29, pointSize: 29, scale: '1x', name: '29pt @1x', filename: 'Icon-App-29x29.png', idiom: 'ipad', displaySize: 20 },
+            { size: 58, pointSize: 29, scale: '2x', name: '29pt @2x', filename: 'Icon-App-29x29@2x.png', idiom: 'ipad', displaySize: 26 },
+            { size: 40, pointSize: 40, scale: '1x', name: '40pt @1x', filename: 'Icon-App-40x40.png', idiom: 'ipad', displaySize: 26 },
+            { size: 80, pointSize: 40, scale: '2x', name: '40pt @2x', filename: 'Icon-App-40x40@2x.png', idiom: 'ipad', displaySize: 32 },
+            { size: 76, pointSize: 76, scale: '1x', name: '76pt @1x', filename: 'Icon-App-76x76.png', idiom: 'ipad', displaySize: 44 },
+            { size: 152, pointSize: 76, scale: '2x', name: '76pt @2x', filename: 'Icon-App-76x76@2x.png', idiom: 'ipad', displaySize: 60 },
+            { size: 167, pointSize: 83.5, scale: '2x', name: '83.5pt @2x', filename: 'Icon-App-83.5x83.5@2x.png', idiom: 'ipad', displaySize: 66 },
+
+            // App Store (marketing)
+            { size: 1024, name: '1024x1024', filename: 'Icon-App-1024x1024.png', idiom: 'ios-marketing', scale: '1x', displaySize: 80 }
         ];
 
         const androidSizes = [
@@ -803,11 +824,11 @@
                 const previewItem = document.createElement('div');
                 previewItem.className = 'preview-item';
                 
-                // Determine background color based on category
+                // Determine background color based on idiom
                 let bgStyle = '';
-                if (config.category === 'appstore') {
+                if (config.idiom === 'ios-marketing') {
                     bgStyle = 'background: #ffffff; border: 1px solid #e0e0e0;';
-                } else if (config.category === 'ipad') {
+                } else if (config.idiom === 'ipad') {
                     bgStyle = 'background: #f0f0f0;';
                 } else {
                     bgStyle = 'background: #f0f0f0;';
@@ -816,33 +837,39 @@
                 previewItem.innerHTML = `
                     <h3>${config.name}</h3>
                     <div class="icon-wrapper" style="${bgStyle}">
-                        <canvas id="ios-${config.size}-${config.filename}" 
+                        <canvas id="ios-${config.idiom}-${config.filename}" 
                                 width="${config.size}" 
                                 height="${config.size}" 
                                 style="width: ${config.displaySize}px; height: ${config.displaySize}px;"></canvas>
                     </div>
                     <div style="font-size: 0.8em; color: #999; margin-top: 5px;">${config.size}×${config.size}</div>
+                    <div style="display: flex; gap: 8px; justify-content: center; margin-top: 8px;">
+                        <button onclick="useIcon('${config.filename}', ${config.pointSize})">Use</button>
+                        <button onclick="downloadCanvas('${config.filename}')">⬇️</button>
+                    </div>
                 `;
                 
-                // Add to appropriate grid based on category
-                if (config.category === 'appstore') {
+                // Add to appropriate grid based on idiom
+                if (config.idiom === 'ios-marketing') {
                     iosAppStoreGrid.appendChild(previewItem);
-                } else if (config.category === 'ipad') {
+                } else if (config.idiom === 'ipad') {
                     iosIpadGrid.appendChild(previewItem);
                 } else {
                     iosIphoneGrid.appendChild(previewItem);
                 }
                 
-                const canvas = document.getElementById(`ios-${config.size}-${config.filename}`);
-                // Handle duplicate 120x120 by using unique canvas IDs
-                if (!canvases.ios[config.size]) {
-                    canvases.ios[config.size] = canvas;
-                } else {
-                    // For second 120x120, create separate entry
-                    canvases.ios[`${config.size}-alt`] = canvas;
+                const canvas = document.getElementById(`ios-${config.idiom}-${config.filename}`);
+                // Map by filename so duplicates don't overwrite earlier available canvas used for export
+                if (!canvases.ios[config.filename]) {
+                    canvases.ios[config.filename] = canvas;
                 }
                 // Draw iOS icon with transparent background, rounded corners
                 drawIconIOS(canvas, config.size);
+                // If drawing produced an empty (fully transparent) canvas, draw a simple fallback thumbnail
+                if (isCanvasBlank(canvas)) {
+                    console.warn('Icon thumbnail blank, applying fallback for', config.filename, 'idiom:', config.idiom);
+                    drawIconFallback(canvas, config.size);
+                }
             });
             
             // Generate Android previews - only preview=true items
@@ -957,30 +984,42 @@
             const padding = parseInt(document.getElementById('padding').value);
             const imageFit = document.getElementById('imageFit').value;
             const cornerRadiusPercent = 20.37; // iOS standard
-            
-            // Clear canvas - NO background, transparent
+            const transparentBg = document.getElementById('transparentBg').checked;
+            const bgColor = document.getElementById('bgColor').value;
+
+            // Clear canvas
             ctx.clearRect(0, 0, size, size);
-            
+
+            // If background is requested, draw rounded background first
+            if (!transparentBg) {
+                ctx.save();
+                const radiusBg = (size * cornerRadiusPercent) / 100;
+                roundRect(ctx, 0, 0, size, size, radiusBg);
+                ctx.fillStyle = bgColor;
+                ctx.fill();
+                ctx.restore();
+            }
+
             // Calculate drawing area
             const drawSize = size - (padding * 2);
             const drawX = padding;
             const drawY = padding;
-            
+
             ctx.save();
-            
+
             // Clip to rounded rectangle (iOS standard shape)
             const radius = (size * cornerRadiusPercent) / 100;
             roundRect(ctx, 0, 0, size, size, radius);
             ctx.clip();
-            
+
             // Calculate image dimensions based on fit mode
             let sx = 0, sy = 0, sw = currentImage.width, sh = currentImage.height;
             let dx = drawX, dy = drawY, dw = drawSize, dh = drawSize;
-            
+
             if (imageFit === 'contain') {
                 const imgRatio = currentImage.width / currentImage.height;
                 const canvasRatio = drawSize / drawSize;
-                
+
                 if (imgRatio > canvasRatio) {
                     dh = drawSize / imgRatio;
                     dy = drawY + (drawSize - dh) / 2;
@@ -991,7 +1030,7 @@
             } else if (imageFit === 'cover') {
                 const imgRatio = currentImage.width / currentImage.height;
                 const canvasRatio = drawSize / drawSize;
-                
+
                 if (imgRatio > canvasRatio) {
                     sw = currentImage.height;
                     sx = (currentImage.width - sw) / 2;
@@ -1000,7 +1039,7 @@
                     sy = (currentImage.height - sh) / 2;
                 }
             }
-            
+
             ctx.drawImage(currentImage, sx, sy, sw, sh, dx, dy, dw, dh);
             ctx.restore();
         }
@@ -1017,6 +1056,114 @@
             ctx.lineTo(x, y + radius);
             ctx.quadraticCurveTo(x, y, x + radius, y);
             ctx.closePath();
+        }
+
+        // If a canvas draws up fully transparent (e.g. tiny sizes or edge cases), detect and draw a fallback
+        function isCanvasBlank(canvas) {
+            try {
+                const ctx = canvas.getContext('2d');
+                const w = canvas.width, h = canvas.height;
+                // sample center and corners
+                const samples = [
+                    [Math.floor(w/2), Math.floor(h/2)],
+                    [Math.floor(w*0.25), Math.floor(h*0.25)],
+                    [Math.floor(w*0.75), Math.floor(h*0.25)],
+                    [Math.floor(w*0.25), Math.floor(h*0.75)],
+                    [Math.floor(w*0.75), Math.floor(h*0.75)]
+                ];
+                for (const [x,y] of samples) {
+                    const d = ctx.getImageData(x, y, 1, 1).data;
+                    if (d[3] !== 0) return false; // not blank
+                }
+                return true;
+            } catch (e) {
+                return false; // if getImageData fails, assume not blank to avoid false positives
+            }
+        }
+
+        function drawIconFallback(canvas, size) {
+            const ctx = canvas.getContext('2d');
+            const transparentBg = document.getElementById('transparentBg').checked;
+            const bgColor = document.getElementById('bgColor').value;
+            ctx.clearRect(0, 0, size, size);
+
+            if (!transparentBg) {
+                ctx.fillStyle = bgColor;
+                ctx.fillRect(0, 0, size, size);
+            }
+
+            if (!currentImage) return;
+
+            // Draw a centered, contain-fit image without clipping for visibility
+            const imgRatio = currentImage.width / currentImage.height;
+            let dw = size, dh = size, dx = 0, dy = 0;
+            if (imgRatio > 1) {
+                dh = size / imgRatio;
+                dy = (size - dh) / 2;
+            } else {
+                dw = size * imgRatio;
+                dx = (size - dw) / 2;
+            }
+            ctx.drawImage(currentImage, 0, 0, currentImage.width, currentImage.height, dx, dy, dw, dh);
+        }
+
+        // Helper utilities for using/downloading preview icons
+        let createdBlobUrls = [];
+        async function blobUrlFromCanvas(canvas) {
+            return await new Promise(resolve => canvas.toBlob(b => resolve(URL.createObjectURL(b)), 'image/png'));
+        }
+
+        async function useIcon(filename, pointSize) {
+            const img = document.getElementById('selectedIcon');
+            const label = document.getElementById('selectedIconLabel');
+            label.textContent = filename;
+
+            // revoke old blob URLs
+            createdBlobUrls.forEach(u => URL.revokeObjectURL(u));
+            createdBlobUrls = [];
+
+            const file2x = `Icon-App-${pointSize}x${pointSize}@2x.png`;
+            const file3x = `Icon-App-${pointSize}x${pointSize}@3x.png`;
+            const canvas3 = canvases.ios[file3x];
+            const canvas2 = canvases.ios[file2x];
+
+            if (canvas3 || canvas2) {
+                // choose best as src
+                if (canvas3) {
+                    const url3 = await blobUrlFromCanvas(canvas3); createdBlobUrls.push(url3); img.src = url3;
+                } else {
+                    const url2 = await blobUrlFromCanvas(canvas2); createdBlobUrls.push(url2); img.src = url2;
+                }
+
+                const srcsetParts = [];
+                if (canvas2) { const u2 = await blobUrlFromCanvas(canvas2); createdBlobUrls.push(u2); srcsetParts.push(`${u2} 2x`); }
+                if (canvas3) { const u3 = await blobUrlFromCanvas(canvas3); createdBlobUrls.push(u3); srcsetParts.push(`${u3} 3x`); }
+                img.srcset = srcsetParts.join(', ');
+            } else {
+                const c = canvases.ios[filename];
+                if (c) {
+                    img.src = c.toDataURL('image/png');
+                    img.srcset = '';
+                }
+            }
+
+            img.width = pointSize;
+            img.height = pointSize;
+        }
+
+        function downloadCanvas(filename) {
+            const c = canvases.ios[filename];
+            if (!c) return;
+            c.toBlob(b => {
+                const a = document.createElement('a');
+                const url = URL.createObjectURL(b);
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 'image/png');
         }
 
         function switchTab(platform) {
@@ -1041,31 +1188,29 @@
             
             const iosIconConfigs = [];
             
-            // Export all icons including duplicate 120x120
+            // Export all iOS icons
             for (const config of iosSizes) {
-                let sourceCanvas;
-                
-                // Handle duplicate 120x120 sizes
-                if (config.filename === 'icon-120-alt.png') {
-                    sourceCanvas = canvases.ios['120-alt'];
-                } else {
-                    sourceCanvas = canvases.ios[config.size];
-                }
-                
+                const sourceCanvas = canvases.ios[config.filename];
                 if (sourceCanvas) {
                     const blob = await new Promise(resolve => sourceCanvas.toBlob(resolve, 'image/png'));
                     appiconset.file(config.filename, blob);
-                    
-                    // Determine idiom based on category
-                    let idiom = config.category === 'appstore' ? 'ios-marketing' : 
-                               config.category === 'ipad' ? 'ipad' : 'iphone';
-                    
-                    iosIconConfigs.push({
-                        size: `${config.size}x${config.size}`,
-                        idiom: idiom,
-                        filename: config.filename,
-                        scale: '1x'
-                    });
+
+                    // Marketing icon uses pixel size, others use point size + scale
+                    if (config.idiom === 'ios-marketing') {
+                        iosIconConfigs.push({
+                            size: `${config.size}x${config.size}`,
+                            idiom: 'ios-marketing',
+                            filename: config.filename,
+                            scale: config.scale || '1x'
+                        });
+                    } else {
+                        iosIconConfigs.push({
+                            size: `${config.pointSize}x${config.pointSize}`,
+                            idiom: config.idiom,
+                            filename: config.filename,
+                            scale: config.scale
+                        });
+                    }
                 }
             }
             
@@ -1079,7 +1224,39 @@
             };
             
             appiconset.file('Contents.json', JSON.stringify(contentsJson, null, 2));
-            
+
+            // --- Create Image Sets (for UIImage/Image asset use in Xcode) ---
+            const imageSetsRoot = zip.folder('ImageSets');
+            const pointMap = {};
+            iosSizes.forEach(cfg => {
+                if (cfg.idiom === 'ios-marketing') return;
+                const p = String(cfg.pointSize);
+                pointMap[p] = pointMap[p] || {};
+                pointMap[p][cfg.scale || '1x'] = cfg.filename;
+            });
+
+            for (const [point, scales] of Object.entries(pointMap)) {
+                const imageset = imageSetsRoot.folder(`AppIcon-${point}x${point}.imageset`);
+                const imagesJson = { images: [], info: { version: 1, author: 'Icon Converter' } };
+
+                for (const scale of ['1x','2x','3x']) {
+                    const srcFilename = scales[scale];
+                    if (!srcFilename) continue;
+                    const srcCanvas = canvases.ios[srcFilename];
+                    if (!srcCanvas) continue;
+
+                    const destFilename = `AppIcon-${point}x${point}${scale === '1x' ? '' : `@${scale}`}.png`;
+                    const blob = await new Promise(resolve => srcCanvas.toBlob(resolve, 'image/png'));
+                    imageset.file(destFilename, blob);
+
+                    imagesJson.images.push({ idiom: 'universal', scale: scale, filename: destFilename });
+                }
+
+                imageset.file('Contents.json', JSON.stringify(imagesJson, null, 2));
+            }
+
+            // ---------------------------------------------------------------
+
             const content = await zip.generateAsync({ type: 'blob' });
             const now = new Date();
             const datetime = now.getFullYear().toString() + 
