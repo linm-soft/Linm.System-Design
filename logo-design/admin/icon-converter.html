@@ -667,6 +667,13 @@
                 </div>
 
                 <div class="control-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="skipXml" checked>
+                        <label for="skipXml" style="margin: 0;">Skip XML (export PNGs only)</label>
+                    </div>
+                </div>
+
+                <div class="control-group">
                     <label>Padding: <span class="range-value" id="paddingValue">0</span>px</label>
                     <input type="range" id="padding" min="0" max="100" value="0" step="1">
                 </div>
@@ -919,13 +926,13 @@
         ];
 
         const androidSizes = [
-            // Main preview sizes (display only 4 key sizes like logo-designer)
-            { size: 512, name: '512×512', filename: 'ic_launcher-512.png', folder: 'playstore', displaySize: 80, preview: true },
-            { size: 192, name: '192×192', filename: 'ic_launcher.png', folder: 'mipmap-xxxhdpi', displaySize: 96, preview: true },
-            { size: 144, name: '144×144', filename: 'ic_launcher.png', folder: 'mipmap-xxhdpi', displaySize: 72, preview: false },
-            { size: 96, name: '96×96', filename: 'ic_launcher.png', folder: 'mipmap-xhdpi', displaySize: 48, preview: true },
-            { size: 72, name: '72×72', filename: 'ic_launcher.png', folder: 'mipmap-hdpi', displaySize: 36, preview: false },
-            { size: 48, name: '48×48', filename: 'ic_launcher.png', folder: 'mipmap-mdpi', displaySize: 24, preview: true }
+            // Main preview sizes (high-res source is XXXHDPI 432x432; we downscale from it)
+            { size: 512, name: '512×512', filename: 'ic_launcher-playstore.png', folder: 'playstore', displaySize: 80, preview: true },
+            { size: 432, name: '432×432', filename: 'ic_launcher.png', folder: 'mipmap-xxxhdpi', displaySize: 96, preview: true },
+            { size: 324, name: '324×324', filename: 'ic_launcher.png', folder: 'mipmap-xxhdpi', displaySize: 72, preview: false },
+            { size: 216, name: '216×216', filename: 'ic_launcher.png', folder: 'mipmap-xhdpi', displaySize: 48, preview: true },
+            { size: 162, name: '162×162', filename: 'ic_launcher.png', folder: 'mipmap-hdpi', displaySize: 36, preview: false },
+            { size: 108, name: '108×108', filename: 'ic_launcher.png', folder: 'mipmap-mdpi', displaySize: 24, preview: true }
         ];
 
         let currentImage = null;
@@ -1496,31 +1503,159 @@ XONG! Logo iOS mới đã được cập nhật.`);
             
             const zip = new JSZip();
             
-            // Android icon configurations
-            const androidIconConfigs = [
-                { size: 512, folder: 'playstore', filename: 'ic_launcher-playstore.png' },
-                { size: 192, folder: 'mipmap-xxxhdpi', filename: 'ic_launcher.png' },
-                { size: 192, folder: 'mipmap-xxxhdpi', filename: 'ic_launcher_round.png' },
-                { size: 144, folder: 'mipmap-xxhdpi', filename: 'ic_launcher.png' },
-                { size: 144, folder: 'mipmap-xxhdpi', filename: 'ic_launcher_round.png' },
-                { size: 96, folder: 'mipmap-xhdpi', filename: 'ic_launcher.png' },
-                { size: 96, folder: 'mipmap-xhdpi', filename: 'ic_launcher_round.png' },
-                { size: 72, folder: 'mipmap-hdpi', filename: 'ic_launcher.png' },
-                { size: 72, folder: 'mipmap-hdpi', filename: 'ic_launcher_round.png' },
-                { size: 48, folder: 'mipmap-mdpi', filename: 'ic_launcher.png' },
-                { size: 48, folder: 'mipmap-mdpi', filename: 'ic_launcher_round.png' }
-            ];
+            // Android icon generation now uses the `androidSizes` array and downscales from the HIGH_RES (432x432) source.
             
-            // Generate icons
-            for (const config of androidIconConfigs) {
-                const canvas = canvases.android[config.size];
-                if (canvas) {
-                    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-                    const folder = zip.folder(config.folder);
-                    folder.file(config.filename, blob);
-                }
+            // Generate icons from a high-res source (XXXHDPI first) and downscale to other densities
+            const HIGH_RES = 432; // XXXHDPI source size (432x432)
+            // Ensure we have a high-res source canvas
+            let highResCanvas = canvases.android[HIGH_RES];
+            if (!highResCanvas) {
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = tempCanvas.height = HIGH_RES;
+                const applyRadius = document.getElementById('applyRadiusToAndroid').checked;
+                drawIcon(tempCanvas, HIGH_RES, applyRadius);
+                highResCanvas = tempCanvas;
             }
-            
+
+            // Create density PNGs by downscaling from high-res source
+            for (const cfg of androidSizes) {
+                if (cfg.folder === 'playstore') {
+                    // Play Store requires 512x512 (top-level)
+                    const out = document.createElement('canvas');
+                    out.width = out.height = 512;
+                    const octx = out.getContext('2d');
+                    octx.imageSmoothingEnabled = true;
+                    octx.imageSmoothingQuality = 'high';
+                    octx.drawImage(highResCanvas, 0, 0, HIGH_RES, HIGH_RES, 0, 0, 512, 512);
+                    const blob = await new Promise(resolve => out.toBlob(resolve, 'image/png'));
+                    zip.folder('playstore').file('ic_launcher-playstore.png', blob);
+                    continue;
+                }
+
+                const targetSize = cfg.size;
+                const out = document.createElement('canvas');
+                out.width = out.height = targetSize;
+                const octx = out.getContext('2d');
+                octx.imageSmoothingEnabled = true;
+                octx.imageSmoothingQuality = 'high';
+                octx.drawImage(highResCanvas, 0, 0, HIGH_RES, HIGH_RES, 0, 0, targetSize, targetSize);
+                const blob = await new Promise(resolve => out.toBlob(resolve, 'image/png'));
+
+                // place density PNGs under res/mipmap-*
+                zip.folder('res').folder(cfg.folder).file('ic_launcher.png', blob);
+                zip.folder('res').folder(cfg.folder).file('ic_launcher_round.png', blob);
+            }
+
+            // --- Adaptive icon (Android 8+) ---
+            // Use high-res (XXXHDPI) canvas as source for adaptive foreground/background computations
+            const safeZonePx = 264; // safe circle diameter in px when canvas is HIGH_RES (432)
+            let srcCanvas = highResCanvas; // use the 432x432 source created above
+
+            if (srcCanvas) {
+                // Check whether user wants to skip XML files (default: checked)
+                const skipXml = document.getElementById('skipXml') && document.getElementById('skipXml').checked;
+
+                // --- Generate foreground using safe zone (inset) so important content isn't clipped by masks ---
+                const size = srcCanvas.width; // square canvases (should be HIGH_RES)
+
+                const fgInsetCanvas = document.createElement('canvas');
+                fgInsetCanvas.width = size;
+                fgInsetCanvas.height = size;
+                const fgCtx = fgInsetCanvas.getContext('2d');
+                fgCtx.clearRect(0, 0, size, size);
+
+                // Draw the source canvas scaled into the center 'safe' area (264px diameter)
+                const target = Math.round(safeZonePx);
+                const offset = Math.round((size - target) / 2);
+                fgCtx.drawImage(srcCanvas, 0, 0, size, size, offset, offset, target, target);
+
+                const fgBlob = await new Promise(resolve => fgInsetCanvas.toBlob(resolve, 'image/png'));
+
+                // --- Background (either XML or fallback PNG) ---
+                const transparentBgChecked = document.getElementById('transparentBg').checked;
+                const bgColor = document.getElementById('bgColor').value || '#FFFFFF';
+
+                // small helper to darken color by fraction (0..1)
+                function darkenHex(hex, amount) {
+                    const c = hex.replace('#','');
+                    const num = parseInt(c, 16);
+                    let r = (num >> 16) & 255;
+                    let g = (num >> 8) & 255;
+                    let b = num & 255;
+                    r = Math.max(0, Math.min(255, Math.round(r * (1 - amount))));
+                    g = Math.max(0, Math.min(255, Math.round(g * (1 - amount))));
+                    b = Math.max(0, Math.min(255, Math.round(b * (1 - amount))));
+                    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+                }
+
+                let bgXml;
+                if (transparentBgChecked) {
+                    bgXml = `<?xml version="1.0" encoding="utf-8"?>\n` +
+                            `<shape xmlns:android="http://schemas.android.com/apk/res/android">\n` +
+                            `    <solid android:color="@android:color/transparent"/>\n` +
+                            `</shape>`;
+                } else {
+                    const endColor = darkenHex(bgColor, 0.08); // slightly darker
+                    bgXml = `<?xml version="1.0" encoding="utf-8"?>\n` +
+                            `<shape xmlns:android="http://schemas.android.com/apk/res/android">\n` +
+                            `    <gradient android:startColor="${bgColor}" android:endColor="${endColor}" android:angle="135"/>\n` +
+                            `</shape>`;
+                }
+
+                // Branch behavior based on 'Skip XML' checkbox (default: checked)
+                if (skipXml) {
+                    // Write inset foreground bitmap and a drawable fallback PNG (no XML files)
+                    zip.folder('res').folder('drawable').file('ic_launcher_foreground.png', fgBlob);
+                    zip.folder('res').folder('drawable').file('ic_launcher.png', fgBlob);
+
+                    // Also write Play Store PNG (512x512) at top-level
+                    const fullBlob = await new Promise(resolve => srcCanvas.toBlob(resolve, 'image/png'));
+                    zip.folder('playstore').file('ic_launcher-playstore.png', fullBlob);
+                } else {
+                    // Write background XML (shape/gradient or transparent)
+                    zip.folder('res').folder('drawable').file('ic_launcher_background.xml', bgXml);
+
+                    // write the inset foreground bitmap PNG (used by the XML wrapper)
+                    zip.folder('res').folder('drawable').file('ic_launcher_foreground.png', fgBlob);
+
+                    // Create XML bitmap wrapper for foreground.
+                    const fgBitmapSrc = '@drawable/ic_launcher_foreground';
+                    const fgBitmapXML = `<?xml version="1.0" encoding="utf-8"?>\n` +
+                        `<bitmap xmlns:android="http://schemas.android.com/apk/res/android"\n` +
+                        `    android:src="${fgBitmapSrc}"\n` +
+                        `    android:antialias="true"\n` +
+                        `    android:filter="true"\n` +
+                        `    android:gravity="center" />`;
+
+                    zip.folder('res').folder('drawable').file('ic_launcher_foreground.xml', fgBitmapXML);
+
+                    // Adaptive icon XML (references the XML background/foreground)
+                    const launcherXML = `<?xml version="1.0" encoding="utf-8"?>\n` +
+                        `<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\n` +
+                        `    <background android:drawable="@drawable/ic_launcher_background"/>\n` +
+                        `    <foreground android:drawable="@drawable/ic_launcher_foreground"/>\n` +
+                        `</adaptive-icon>`;
+
+                    zip.folder('res').folder('mipmap-anydpi-v26').file('ic_launcher.xml', launcherXML);
+                    zip.folder('res').folder('mipmap-anydpi-v26').file('ic_launcher_round.xml', launcherXML);
+
+                    // Also write Play Store PNG (512x512) at top-level
+                    const fullBlob = await new Promise(resolve => srcCanvas.toBlob(resolve, 'image/png'));
+                    zip.folder('playstore').file('ic_launcher-playstore.png', fullBlob);
+                }
+
+                // Adaptive icon XML (references the XML background/foreground)
+                const launcherXML = `<?xml version="1.0" encoding="utf-8"?>\n` +
+                    `<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\n` +
+                    `    <background android:drawable="@drawable/ic_launcher_background"/>\n` +
+                    `    <foreground android:drawable="@drawable/ic_launcher_foreground"/>\n` +
+                    `</adaptive-icon>`;
+
+                // Add adaptive icon XML for regular and round (under res/mipmap-anydpi-v26)
+                zip.folder('res').folder('mipmap-anydpi-v26').file('ic_launcher.xml', launcherXML);
+                zip.folder('res').folder('mipmap-anydpi-v26').file('ic_launcher_round.xml', launcherXML);
+            }
+
             const content = await zip.generateAsync({ type: 'blob' });
             const now = new Date();
             const datetime = now.getFullYear().toString() + 
@@ -1539,41 +1674,19 @@ XONG! Logo iOS mới đã được cập nhật.`);
 HƯỚNG DẪN SỬ DỤNG ANDROID:
 =========================
 1. Giải nén file ZIP
-2. Copy các folder mipmap-* vào:
-   [YourProject]/app/src/main/res/
-
-Cấu trúc folder:
-└── res/
-    ├── mipmap-mdpi/
-    │   ├── ic_launcher.png (48x48)
-    │   └── ic_launcher_round.png (48x48)
-    ├── mipmap-hdpi/
-    │   ├── ic_launcher.png (72x72)
-    │   └── ic_launcher_round.png (72x72)
-    ├── mipmap-xhdpi/
-    │   ├── ic_launcher.png (96x96)
-    │   └── ic_launcher_round.png (96x96)
-    ├── mipmap-xxhdpi/
-    │   ├── ic_launcher.png (144x144)
-    │   └── ic_launcher_round.png (144x144)
-    └── mipmap-xxxhdpi/
-        ├── ic_launcher.png (192x192)
-        └── ic_launcher_round.png (192x192)
-
-3. File playstore/ic_launcher-playstore.png (512x512)
-   để upload lên Google Play Console
-
+2. Copy folder "res" vào:
+   [YourProject]/app/src/main/
+   (Hoặc merge nội dung: copy các thư mục trong "res" vào [YourProject]/app/src/main/res/)
+3. **Không** copy folder "playstore" vào "res" — file 512x512 trong "playstore/ic_launcher-playstore.png" dùng để upload lên Google Play Console.
 4. Build & Run app!
 
-Gồm đầy đủ densities:
-- MDPI (48x48)
-- HDPI (72x72)
-- XHDPI (96x96)
-- XXHDPI (144x144)
-- XXXHDPI (192x192)
-- Play Store (512x512)
+Bao gồm:
+- res/mipmap-mdpi ... mipmap-xxxhdpi (ic_launcher.png / ic_launcher_round.png)
+- playstore/ic_launcher-playstore.png (512x512) — upload to Play Console
 
-XONG! Logo Android mới đã được cập nhật.`);
+Lưu ý: Mặc định 'Skip XML' được bật — các file XML adaptive và drawable sẽ **không** được xuất. Nếu bạn muốn xuất XML (adaptive icon, background/foreground XML), hãy bỏ chọn 'Skip XML' trước khi Export.
+
+XONG! Logo Android đã được xuất đúng định dạng.`);
             }, 500);
         }
 
