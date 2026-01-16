@@ -296,6 +296,18 @@
             cursor: pointer;
         }
 
+        /* Color chips for removed colors */
+        #colorChips { display:flex; gap:8px; flex-wrap:wrap; }
+        .color-chip { display:inline-flex; align-items:center; gap:8px; padding:6px 8px; border-radius:10px; background:#f5f6fb; border:1px solid #e6e8f6; cursor:pointer; font-weight:600; color:#333; }
+        .color-chip.selected { box-shadow: 0 6px 18px rgba(102,126,234,0.12); border-color:#667eea; }
+        .chip-swatch { width:18px; height:18px; border-radius:4px; border:1px solid rgba(0,0,0,0.06); display:inline-block; }
+        .chip-label { font-size:0.85em; color:#444; }
+        .chip-tol { font-size:0.75em; color:#777; padding-left:6px }
+        .chip-remove { margin-left:6px; background:transparent; border:none; font-weight:700; color:#a00; cursor:pointer; border-radius:6px; }
+        .chip-remove:hover { color:#e33; }
+
+        
+
         .checkbox-group {
             display: flex;
             align-items: center;
@@ -335,35 +347,111 @@
             display: flex;
         }
 
+        /* When modal is open, prevent body scroll and interaction with background */
+        body.modal-open {
+            overflow: hidden;
+        }
+        body.modal-open .container {
+            filter: blur(0.6px);
+            pointer-events: none;
+            user-select: none;
+        }
+
         .remove-bg-container {
             background: white;
             border-radius: 15px;
             padding: 30px;
-            max-width: 90%;
-            max-height: 90%;
+            max-width: 1100px;
+            width: min(1100px, 90vw);
+            max-height: 90vh;
             overflow: auto;
         }
+
+        /* Responsive layout inside the modal: image first on small screens (single column), two-column on wide screens */
+        .remove-bg-main {
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-template-areas:
+                "image"
+                "controls";
+            gap: 20px;
+            align-items: start;
+        }
+        .remove-bg-left { /* controls */
+            grid-area: controls;
+            min-width: 0;
+            max-height: calc(90vh - 160px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-right: 8px;
+        }
+        .remove-bg-right { /* image + canvas */
+            grid-area: image;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 320px;
+        }
+
+        /* Desktop: two-column layout with controls left and image right */
+        @media (min-width: 700px) {
+            .remove-bg-main {
+                grid-template-columns: 360px 1fr;
+                grid-template-areas: "controls image";
+            }
+            .remove-bg-left { min-width: 320px; }
+        }
+        /* Force two-column if modal has 'two-column' class (useful when modal width allows it) */
+        .remove-bg-container.two-column .remove-bg-main {
+            grid-template-columns: 360px 1fr;
+            grid-template-areas: "controls image";
+        }
+
+        .icon-preview {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(255,255,255,0.9);
+            padding: 8px;
+            border-radius: 10px;
+            border: 1px solid rgba(0,0,0,0.06);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+            z-index: 120;
+        }
+        .icon-preview img { width: 88px; height: 88px; object-fit: contain; display:block; }
 
         .remove-bg-canvas-wrapper {
             position: relative;
             margin: 20px 0;
-            overflow: hidden;
+            overflow: visible;
             border: 2px solid #e0e0e0;
             border-radius: 8px;
-            background: #f5f5f5;
-            max-height: 65vh;
+            background: #fff;
+            max-height: calc(90vh - 160px);
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 400px;
         }
 
         .canvas-container {
             overflow: auto;
-            max-height: 60vh;
+            max-height: calc(90vh - 200px);
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
         }
 
         #removeBgCanvas {
             display: block;
             cursor: crosshair;
-            transform-origin: top left;
+            transform-origin: center center;
+            max-width: 100%;
+            max-height: calc(90vh - 240px);
         }
 
         .zoom-controls {
@@ -456,6 +544,55 @@
             font-size: 0.9em;
             color: #856404;
         }
+
+        .preview-btn {
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: #f5f5f5;
+            border: 1px solid #e0e0e0;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .preview-btn.active {
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.12);
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        /* Processing overlay (spinner) */
+        .processing-overlay {
+            position: absolute;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.35);
+            border-radius: 12px;
+            z-index: 500;
+        }
+        .processing-overlay.active { display: flex; }
+        .spinner {
+            background: white;
+            padding: 12px 16px;
+            border-radius: 10px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            font-weight: 700;
+            color: #333;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+        }
+        .spinner:before {
+            content: '';
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #667eea;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
@@ -628,69 +765,128 @@
         <div class="remove-bg-container">
             <h2 style="color: #333; margin-bottom: 15px;">🎨 Remove Background</h2>
             
-            <div class="instruction-text">
-                <strong>📌 Instructions:</strong><br>
-                1. Use zoom buttons to zoom in/out for precise color selection<br>
-                2. Click on the color you want to remove<br>
-                3. Adjust tolerance and edge smoothing for best results<br>
-                4. Click Apply to save changes
-            </div>
-
-            <div class="remove-bg-canvas-wrapper">
-                <div class="zoom-controls">
-                    <button class="zoom-btn" onclick="zoomIn()" title="Zoom In">+</button>
-                    <div class="zoom-level" id="zoomLevel">100%</div>
-                    <button class="zoom-btn" onclick="zoomOut()" title="Zoom Out">−</button>
-                    <button class="zoom-btn" onclick="resetZoom()" title="Reset Zoom">⟲</button>
-                </div>
-                <div class="canvas-container" id="canvasContainer">
-                    <canvas id="removeBgCanvas"></canvas>
-                </div>
-            </div>
-
-            <div class="remove-bg-controls">
-                <div class="tolerance-control">
-                    <label style="font-weight: 600; color: #333;">
-                        Tolerance: <span class="range-value" id="toleranceValue">30</span>
-                    </label>
-                    <input type="range" id="toleranceRange" min="0" max="100" value="30" step="1" style="width: 100%; margin-top: 8px;">
-                    <div style="font-size: 0.85em; color: #666; margin-top: 5px;">
-                        Higher values remove more similar colors
+            <div class="remove-bg-main">
+                <div class="remove-bg-right">
+                    <div class="remove-bg-canvas-wrapper">
+                        <div class="zoom-controls">
+                            <button class="zoom-btn" onclick="zoomIn()" title="Zoom In">+</button>
+                            <div class="zoom-level" id="zoomLevel">100%</div>
+                            <button class="zoom-btn" onclick="zoomOut()" title="Zoom Out">−</button>
+                            <button class="zoom-btn" onclick="resetZoom()" title="Reset Zoom">⟲</button>
+                        </div>
+                        <div id="processingOverlay" class="processing-overlay"><div class="spinner">Processing…</div></div>
+                        <div class="canvas-container" id="canvasContainer">
+                            <canvas id="removeBgCanvas" tabindex="0"></canvas>
+                        </div>
+                    </div>
+                    <div class="icon-preview" title="Preview">
+                        <img id="removePreviewThumb" src="" alt="Preview">
                     </div>
                 </div>
 
-                <div class="edge-smoothing-control">
-                    <label style="font-weight: 600; color: #333;">
-                        Edge Smoothing: <span class="range-value" id="edgeSmoothingValue">2</span>px
-                    </label>
-                    <input type="range" id="edgeSmoothingRange" min="0" max="10" value="2" step="1" style="width: 100%; margin-top: 8px;">
-                    <div style="font-size: 0.85em; color: #666; margin-top: 5px;">
-                        Smooths edges to reduce jagged pixels and improve quality
+                <div class="remove-bg-left">
+                    <div class="instruction-text">
+                        <strong>📌 Instructions:</strong><br>
+                        1. Use zoom buttons to zoom in/out for precise color selection<br>
+                        2. Click on the color you want to remove<br>
+                        3. Adjust tolerance and edge smoothing for best results<br>
+                        4. Click Apply to save changes
+                    </div>
+
+                    <div class="remove-bg-controls">
+                        <div class="control-group">
+                            <label style="font-weight: 600; color: #333;">Selected Colors to Remove:</label>
+                            <div id="colorChips" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;"></div>
+                            <div style="display:flex; gap:8px; margin-top:10px;">
+                                <input type="color" id="manualColorPicker" value="#ffffff" style="height:36px; padding:0; border-radius:6px; border:1px solid #e0e0e0;">
+                                <button onclick="addManualColor()" style="padding:8px 12px; background: linear-gradient(135deg, #667eea, #764ba2); color:#fff; border-radius:8px;">➕ Add</button>
+                                <button onclick="clearColorChips()" style="padding:8px 12px; background: linear-gradient(135deg, #ffc107, #ff9800); color:#fff; border-radius:8px;">✖ Clear</button>
+                            </div>
+                            <div style="font-size:0.85em; color:#666; margin-top:6px;">Click canvas to add color. Click a chip to select it and edit tolerance.</div>
+                        </div>
+
+                        <div class="edge-smoothing-control">
+                            <label style="font-weight: 600; color: #333;">
+                                <input type="checkbox" id="hqRemove" style="margin-right:8px;">
+                                High Quality (Upscale + Feather)
+                            </label>
+                            <div style="font-size: 0.85em; color: #666; margin-top: 5px;">
+                                Enable upscale + blurred mask for smoother edges (may be slower on large images).
+                            </div>
+                        </div> 
+
+                        <div class="tolerance-control">
+                            <label style="font-weight: 600; color: #333;">
+                                Tolerance: <span class="range-value" id="toleranceValue">30</span>
+                            </label>
+                            <input type="range" id="toleranceRange" min="0" max="100" value="30" step="1" style="width: 100%; margin-top: 8px;">
+                            <div style="font-size: 0.85em; color: #666; margin-top: 5px;">
+                                Higher values remove more similar colors
+                            </div>
+                        </div>
+
+                        <div class="edge-smoothing-control">
+                            <label style="font-weight: 600; color: #333;">
+                                Edge Smoothing: <span class="range-value" id="edgeSmoothingValue">2</span>px
+                            </label>
+                            <input type="range" id="edgeSmoothingRange" min="0" max="10" value="2" step="1" style="width: 100%; margin-top: 8px;">
+                            <div style="font-size: 0.85em; color: #666; margin-top: 5px;">
+                                Smooths edges to reduce jagged pixels and improve quality
+                            </div>
+                        </div>
+
+                        <div class="edge-smoothing-control" style="background: #fff3cd;">
+                            <label style="font-weight: 600; color: #333;">
+                                Border Cleanup: <span class="range-value" id="borderCleanupValue">1</span>px
+                            </label>
+                            <input type="range" id="borderCleanupRange" min="0" max="5" value="1" step="1" style="width: 100%; margin-top: 8px;">
+                            <div style="font-size: 0.85em; color: #666; margin-top: 5px;">
+                                Removes thin border artifacts around removed areas
+                            </div>
+                        </div>
+
+                        <div class="edge-smoothing-control">
+                            <label style="font-weight: 600; color: #333;">
+                                <input type="checkbox" id="decontaminate" style="margin-right:8px;">
+                                Reduce dark halo (Edge decontaminate)
+                            </label>
+                            <div style="font-size: 0.85em; color: #666; margin-top: 5px;">
+                                Improves semi-transparent edge colors when composited on dark backgrounds.
+                            </div>
+                            <div style="margin-top:8px; font-size:0.9em; color:#333;">
+                                <label style="font-weight:600;"><input type="checkbox" id="linearBlend" style="margin-right:8px;" checked>Use linear blending (better color math)</label>
+                            </div>
+                            <div style="margin-top:6px; font-size:0.9em; color:#333;">
+                                <label style="font-weight:600;"><input type="checkbox" id="softEdges" style="margin-right:8px;" checked>Soft edges (tiny final blur)</label>
+                            </div>
+                            <div style="margin-top:6px; font-size:0.9em; color:#333;">
+                                <label style="font-weight:600;"><input type="checkbox" id="distanceAA" style="margin-right:8px;" checked>Use Distance AA (recommended)</label>
+                                <div style="font-size:0.85em; color:#666; margin-top:4px;">Signed-distance antialiasing for sharp, non-pixelated edges in dark/light backgrounds.</div>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label style="font-weight: 600; color: #333;">Preview background:</label>
+                            <div style="display:flex; gap: 8px; margin-top:8px;">
+                                <button type="button" id="previewLightBtn" class="preview-btn active" onclick="setPreviewBackground('light')">Light</button>
+                                <button type="button" id="previewDarkBtn" class="preview-btn" onclick="setPreviewBackground('dark')">Dark</button>
+                                <button type="button" id="previewCheckerBtn" class="preview-btn" onclick="setPreviewBackground('checker')">Checker</button>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:12px; display:flex; gap:8px;">
+                            <button onclick="applyRemoveBackground()" style="width: auto; background: linear-gradient(135deg, #43e97b, #38f9d7);">
+                                ✅ Apply Changes
+                            </button>
+                            <button onclick="resetRemoveBackground()" style="width: auto; background: linear-gradient(135deg, #ffc107, #ff9800);">
+                                🔄 Reset
+                            </button>
+                            <button onclick="closeRemoveBgModal()" style="width: auto; background: linear-gradient(135deg, #f093fb, #f5576c);">
+                                ❌ Cancel
+                            </button>
+                        </div>
                     </div>
                 </div>
-
-                <div class="edge-smoothing-control" style="background: #fff3cd;">
-                    <label style="font-weight: 600; color: #333;">
-                        Border Cleanup: <span class="range-value" id="borderCleanupValue">1</span>px
-                    </label>
-                    <input type="range" id="borderCleanupRange" min="0" max="5" value="1" step="1" style="width: 100%; margin-top: 8px;">
-                    <div style="font-size: 0.85em; color: #666; margin-top: 5px;">
-                        Removes thin border artifacts around removed areas
-                    </div>
-                </div>
-
-                <div class="remove-bg-buttons">
-                    <button onclick="applyRemoveBackground()" style="width: auto; background: linear-gradient(135deg, #43e97b, #38f9d7);">
-                        ✅ Apply Changes
-                    </button>
-                    <button onclick="resetRemoveBackground()" style="width: auto; background: linear-gradient(135deg, #ffc107, #ff9800);">
-                        🔄 Reset
-                    </button>
-                    <button onclick="closeRemoveBgModal()" style="width: auto; background: linear-gradient(135deg, #f093fb, #f5576c);">
-                        ❌ Cancel
-                    </button>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -738,7 +934,8 @@
         let removeBgCtx = null;
         let removeBgImageData = null;
         let originalImageData = null;
-        let selectedColor = null;
+        let selectedColors = [];
+        let activeColorIndex = -1;
         let zoomLevel = 1;
         let isPanning = false;
         let startPanX = 0;
@@ -1440,7 +1637,11 @@ XONG! Logo Android mới đã được cập nhật.`);
             // Reset zoom
             zoomLevel = 1;
             updateZoomDisplay();
-            selectedColor = null;
+            selectedColors = [];
+            activeColorIndex = -1;
+            renderColorChips();
+            // Update the small preview thumbnail in the modal
+            const thumb = document.getElementById('removePreviewThumb'); if (thumb) { thumb.src = currentImage.src; thumb.style.display = 'block'; }
             
             // Setup pan functionality
             const container = document.getElementById('canvasContainer');
@@ -1464,11 +1665,28 @@ XONG! Logo Android mới đã được cập nhật.`);
             document.getElementById('borderCleanupRange').addEventListener('input', handleBorderCleanupChange);
             
             modal.classList.add('active');
+            // Prevent body from scrolling / interacting while modal is open
+            document.body.classList.add('modal-open');
+            // Default preview background
+            setPreviewBackground('light');
+
+            // Force two-column layout if modal is wide enough (use modal width, not viewport)
+            function updateTwoColumn() {
+                if (!modal) return;
+                if (modal.clientWidth >= 700) modal.classList.add('two-column'); else modal.classList.remove('two-column');
+            }
+            updateTwoColumn();
+            // Listen for resize while modal is open
+            window.addEventListener('resize', updateTwoColumn);
+            // store reference for removal
+            modal._updateTwoColumn = updateTwoColumn;
         }
 
         function closeRemoveBgModal() {
             const modal = document.getElementById('removeBgModal');
             modal.classList.remove('active');
+            // Restore body interaction/scroll
+            document.body.classList.remove('modal-open');
             
             const container = document.getElementById('canvasContainer');
             container.removeEventListener('mousedown', startPan);
@@ -1483,6 +1701,13 @@ XONG! Logo Android mới đã được cập nhật.`);
             document.getElementById('toleranceRange').removeEventListener('input', handleToleranceChange);
             document.getElementById('edgeSmoothingRange').removeEventListener('input', handleEdgeSmoothingChange);
             document.getElementById('borderCleanupRange').removeEventListener('input', handleBorderCleanupChange);
+
+            // Remove resize handler and two-column class
+            if (modal && modal._updateTwoColumn) {
+                window.removeEventListener('resize', modal._updateTwoColumn);
+                modal._updateTwoColumn = null;
+            }
+            if (modal) modal.classList.remove('two-column');
         }
 
         // Zoom functions
@@ -1568,175 +1793,417 @@ XONG! Logo Android mới đã được cập nhật.`);
             const x = Math.floor((e.clientX - rect.left) * scaleX);
             const y = Math.floor((e.clientY - rect.top) * scaleY);
             
-            // Get clicked color
+            // Get clicked color and add as chip
             const imageData = removeBgCtx.getImageData(x, y, 1, 1);
-            selectedColor = {
-                r: imageData.data[0],
-                g: imageData.data[1],
-                b: imageData.data[2]
-            };
-            
-            // Apply removal
-            removeColorFromBackground();
+            const r = imageData.data[0], g = imageData.data[1], b = imageData.data[2];
+            const tol = parseInt(document.getElementById('toleranceRange').value || 30);
+            addColorChipFromRGB(r, g, b, tol);
         }
 
         function handleToleranceChange(e) {
             document.getElementById('toleranceValue').textContent = e.target.value;
-            if (selectedColor) {
+            const val = parseInt(e.target.value);
+            if (activeColorIndex >= 0 && selectedColors[activeColorIndex]) {
+                selectedColors[activeColorIndex].tolerance = val;
+                renderColorChips();
+                if (selectedColors.length > 0) removeColorFromBackground();
+            } else if (selectedColors.length > 0) {
+                // update all chips if no active selection
+                selectedColors.forEach(c => c.tolerance = val);
+                renderColorChips();
                 removeColorFromBackground();
             }
         }
 
         function handleEdgeSmoothingChange(e) {
             document.getElementById('edgeSmoothingValue').textContent = e.target.value;
-            if (selectedColor) {
+            if (selectedColors.length > 0) {
                 removeColorFromBackground();
             }
         }
 
         function handleBorderCleanupChange(e) {
             document.getElementById('borderCleanupValue').textContent = e.target.value;
-            if (selectedColor) {
+            if (selectedColors.length > 0) {
                 removeColorFromBackground();
             }
         }
 
-        function removeColorFromBackground() {
-            if (!selectedColor) return;
-            
-            const tolerance = parseInt(document.getElementById('toleranceRange').value);
-            const borderCleanup = parseInt(document.getElementById('borderCleanupRange').value);
-            
-            // Reset to original
-            removeBgImageData = new ImageData(
-                new Uint8ClampedArray(originalImageData.data),
-                originalImageData.width,
-                originalImageData.height
-            );
-            
-            const data = removeBgImageData.data;
-            const edgeSmoothing = parseInt(document.getElementById('edgeSmoothingRange').value);
-            
-            // First pass: Mark pixels for removal and calculate edge distances
-            const removeMap = new Uint8Array(data.length / 4);
-            
-            for (let i = 0; i < data.length; i += 4) {
-                const r = data[i];
-                const g = data[i + 1];
-                const b = data[i + 2];
-                
-                // Calculate color distance
-                const distance = Math.sqrt(
-                    Math.pow(r - selectedColor.r, 2) +
-                    Math.pow(g - selectedColor.g, 2) +
-                    Math.pow(b - selectedColor.b, 2)
-                );
-                
-                const pixelIndex = i / 4;
-                // If color is within tolerance, mark for removal
-                if (distance <= tolerance * 4.41) { // 4.41 ≈ sqrt(255^2 * 3) / 100
-                    removeMap[pixelIndex] = 1;
+        // --- color chip helpers ---
+        function rgbToHex(r,g,b){
+            return '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
+        }
+
+        function addColorChipFromRGB(r,g,b,tolerance){
+            const hex = rgbToHex(r,g,b);
+            selectedColors.push({r,g,b,hex,tolerance: parseInt(tolerance)});
+            activeColorIndex = selectedColors.length - 1;
+            renderColorChips();
+            removeColorFromBackground();
+        }
+
+        function addManualColor(){
+            const hex = document.getElementById('manualColorPicker').value;
+            const res = /^#?([a-f\d]{6})$/i.exec(hex);
+            if (!res) return;
+            const r = parseInt(res[1].substr(0,2),16);
+            const g = parseInt(res[1].substr(2,2),16);
+            const b = parseInt(res[1].substr(4,2),16);
+            const tol = parseInt(document.getElementById('toleranceRange').value || 30);
+            addColorChipFromRGB(r,g,b,tol);
+        }
+
+        function renderColorChips(){
+            const container = document.getElementById('colorChips');
+            if (!container) return;
+            container.innerHTML = '';
+            selectedColors.forEach((c,i)=>{
+                const chip = document.createElement('div');
+                chip.className = 'color-chip' + (i===activeColorIndex ? ' selected' : '');
+                chip.title = `Hex: ${c.hex} — Tol: ${c.tolerance}`;
+                chip.onclick = () => selectColorChip(i);
+                const sw = document.createElement('span'); sw.className = 'chip-swatch'; sw.style.background = c.hex; chip.appendChild(sw);
+                const lbl = document.createElement('span'); lbl.className = 'chip-label'; lbl.textContent = c.hex; chip.appendChild(lbl);
+                const t = document.createElement('span'); t.className = 'chip-tol'; t.textContent = `${c.tolerance}`; chip.appendChild(t);
+                const btn = document.createElement('button'); btn.className = 'chip-remove'; btn.textContent = '✖'; btn.onclick = (ev)=>{ ev.stopPropagation(); removeColorChip(i); };
+                chip.appendChild(btn);
+                container.appendChild(chip);
+            });
+        }
+
+        function removeColorChip(idx){
+            if (idx < 0 || idx >= selectedColors.length) return;
+            selectedColors.splice(idx,1);
+            if (activeColorIndex >= selectedColors.length) activeColorIndex = selectedColors.length - 1;
+            if (selectedColors.length === 0) activeColorIndex = -1;
+            renderColorChips();
+            removeColorFromBackground();
+        }
+
+        function selectColorChip(idx){
+            activeColorIndex = idx;
+            renderColorChips();
+            document.getElementById('toleranceRange').value = selectedColors[idx].tolerance;
+            document.getElementById('toleranceValue').textContent = selectedColors[idx].tolerance;
+            removeColorFromBackground();
+        }
+
+        function clearColorChips(){
+            selectedColors = [];
+            activeColorIndex = -1;
+            renderColorChips();
+            removeColorFromBackground();
+        }
+
+        async function removeColorFromBackground() {
+            // If no colors selected, restore original image
+            if (!selectedColors || selectedColors.length === 0) {
+                if (originalImageData) {
+                    removeBgImageData = new ImageData(new Uint8ClampedArray(originalImageData.data), originalImageData.width, originalImageData.height);
+                    removeBgCtx.putImageData(removeBgImageData, 0, 0);
                 }
+                return;
             }
-            
-            // Border cleanup pass: Expand removal area to clean up thin borders
-            if (borderCleanup > 0) {
-                const width = removeBgImageData.width;
-                const height = removeBgImageData.height;
-                const expandedMap = new Uint8Array(removeMap);
-                
+
+            showSpinner();
+            // Let UI update
+            await new Promise(r => setTimeout(r, 10));
+
+            try {
+                const tolerance = parseInt(document.getElementById('toleranceRange').value);
+                const borderCleanup = parseInt(document.getElementById('borderCleanupRange').value);
+                const edgeSmoothing = parseInt(document.getElementById('edgeSmoothingRange').value);
+                const hq = document.getElementById('hqRemove') && document.getElementById('hqRemove').checked;
+
+                // Determine working scale for higher quality processing
+                let scale = 1;
+                if (hq) {
+                    const desiredMin = 1024; // aim for at least this width
+                    scale = Math.max(1, Math.ceil(desiredMin / currentImage.width));
+                    scale = Math.min(scale, 3); // cap upscale to 3x
+                    // cap absolute dimension to avoid huge canvases
+                    if (currentImage.width * scale > 2048) {
+                        scale = Math.max(1, Math.floor(2048 / currentImage.width));
+                    }
+                }
+
+                const workW = Math.max(1, Math.round(removeBgCanvas.width * scale));
+                const workH = Math.max(1, Math.round(removeBgCanvas.height * scale));
+
+                // Create working canvas and draw the image at higher resolution if needed
+                const workCanvas = document.createElement('canvas');
+                workCanvas.width = workW;
+                workCanvas.height = workH;
+                const workCtx = workCanvas.getContext('2d');
+                workCtx.imageSmoothingEnabled = true;
+                workCtx.imageSmoothingQuality = 'high';
+                workCtx.drawImage(currentImage, 0, 0, workW, workH);
+
+                // Read pixels from working canvas
+                const workImageData = workCtx.getImageData(0, 0, workW, workH);
+                const data = workImageData.data;
+
+                // Build initial remove map based on distance to any selected target color
+                const targets = selectedColors.map(c => ({r:c.r,g:c.g,b:c.b,tolFactor: (c.tolerance||parseInt(document.getElementById('toleranceRange').value)) * 4.41}));
+                const removeMap = new Uint8Array(workW * workH);
                 for (let i = 0; i < data.length; i += 4) {
-                    const pixelIndex = i / 4;
-                    if (removeMap[pixelIndex]) {
-                        const x = pixelIndex % width;
-                        const y = Math.floor(pixelIndex / width);
-                        
-                        // Expand removal area around removed pixels
-                        for (let dy = -borderCleanup; dy <= borderCleanup; dy++) {
-                            for (let dx = -borderCleanup; dx <= borderCleanup; dx++) {
-                                const nx = x + dx;
-                                const ny = y + dy;
-                                
-                                if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-                                    const neighborIndex = ny * width + nx;
-                                    const ni = neighborIndex * 4;
-                                    
-                                    // Only expand to similar colors
-                                    const nr = data[ni];
-                                    const ng = data[ni + 1];
-                                    const nb = data[ni + 2];
-                                    
-                                    const neighborDist = Math.sqrt(
-                                        Math.pow(nr - selectedColor.r, 2) +
-                                        Math.pow(ng - selectedColor.g, 2) +
-                                        Math.pow(nb - selectedColor.b, 2)
-                                    );
-                                    
-                                    // Expand if neighbor is somewhat similar (more lenient)
-                                    if (neighborDist <= tolerance * 4.41 * 1.5) {
-                                        expandedMap[neighborIndex] = 1;
+                    const r = data[i];
+                    const g = data[i + 1];
+                    const b = data[i + 2];
+                    const idx = i / 4;
+                    for (let t = 0; t < targets.length; t++) {
+                        const td = targets[t];
+                        const dist = Math.hypot(r - td.r, g - td.g, b - td.b);
+                        if (dist <= td.tolFactor) { removeMap[idx] = 1; break; }
+                    }
+                }
+
+                // Border cleanup: expand removal in the neighborhood of removed pixels (consider any target)
+                if (borderCleanup > 0) {
+                    const expanded = new Uint8Array(removeMap);
+                    for (let y = 0; y < workH; y++) {
+                        for (let x = 0; x < workW; x++) {
+                            const idx = y * workW + x;
+                            if (!removeMap[idx]) continue;
+
+                            for (let dy = -borderCleanup; dy <= borderCleanup; dy++) {
+                                for (let dx = -borderCleanup; dx <= borderCleanup; dx++) {
+                                    const nx = x + dx;
+                                    const ny = y + dy;
+                                    if (nx >= 0 && nx < workW && ny >= 0 && ny < workH) {
+                                        const nidx = ny * workW + nx;
+                                        const ni = nidx * 4;
+                                        const nr = data[ni];
+                                        const ng = data[ni + 1];
+                                        const nb = data[ni + 2];
+                                        for (let t = 0; t < targets.length; t++) {
+                                            const td = targets[t];
+                                            const nd = Math.hypot(nr - td.r, ng - td.g, nb - td.b);
+                                            if (nd <= td.tolFactor * 1.5) { expanded[nidx] = 1; break; }
+                                        }
                                     }
                                 }
                             }
                         }
                     }
+                    removeMap.set(expanded);
                 }
-                
-                // Copy expanded map back
+
+                // Create a mask canvas (white = removed, black = kept)
+                const maskCanvas = document.createElement('canvas');
+                maskCanvas.width = workW;
+                maskCanvas.height = workH;
+                const maskCtx = maskCanvas.getContext('2d');
+                const maskImage = maskCtx.createImageData(workW, workH);
                 for (let i = 0; i < removeMap.length; i++) {
-                    removeMap[i] = expandedMap[i];
+                    const m = removeMap[i] ? 255 : 0;
+                    const k = i * 4;
+                    maskImage.data[k] = m;
+                    maskImage.data[k + 1] = m;
+                    maskImage.data[k + 2] = m;
+                    maskImage.data[k + 3] = 255;
                 }
-            }
-            
-            // Second pass: Apply removal with edge smoothing
-            const width = removeBgImageData.width;
-            const height = removeBgImageData.height;
-            
-            for (let i = 0; i < data.length; i += 4) {
-                const pixelIndex = i / 4;
-                const x = pixelIndex % width;
-                const y = Math.floor(pixelIndex / width);
-                
-                if (removeMap[pixelIndex]) {
-                    data[i + 3] = 0; // Fully transparent
-                } else if (edgeSmoothing > 0) {
-                    // Check if this pixel is near a removed pixel (edge detection)
-                    let nearRemoved = false;
-                    let minDist = edgeSmoothing + 1;
-                    
-                    for (let dy = -edgeSmoothing; dy <= edgeSmoothing; dy++) {
-                        for (let dx = -edgeSmoothing; dx <= edgeSmoothing; dx++) {
-                            const nx = x + dx;
-                            const ny = y + dy;
-                            
-                            if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-                                const neighborIndex = ny * width + nx;
-                                if (removeMap[neighborIndex]) {
-                                    nearRemoved = true;
-                                    const dist = Math.sqrt(dx * dx + dy * dy);
-                                    minDist = Math.min(minDist, dist);
+                maskCtx.putImageData(maskImage, 0, 0);
+
+                // Blur the mask for feathered edges (scaled by processing scale)
+                const blurRadius = Math.max(0, Math.round(edgeSmoothing * (hq ? scale : 1) * 1.5));
+                const blurredCanvas = document.createElement('canvas');
+                blurredCanvas.width = workW;
+                blurredCanvas.height = workH;
+                const bctx = blurredCanvas.getContext('2d');
+                if (blurRadius > 0) {
+                    bctx.filter = `blur(${blurRadius}px)`;
+                    bctx.drawImage(maskCanvas, 0, 0);
+                    bctx.filter = 'none';
+                } else {
+                    bctx.drawImage(maskCanvas, 0, 0);
+                }
+
+                // Read blurred mask and apply it to the alpha channel
+                const blurredData = bctx.getImageData(0, 0, workW, workH).data;
+                // Keep a copy of original colors for decontamination
+                const originalData = new Uint8ClampedArray(data);
+                const decon = document.getElementById('decontaminate') && document.getElementById('decontaminate').checked;
+                const linearBlend = document.getElementById('linearBlend') && document.getElementById('linearBlend').checked;
+                const softEdges = document.getElementById('softEdges') && document.getElementById('softEdges').checked;
+                const deconRadius = Math.max(1, Math.round(edgeSmoothing * (hq ? scale : 1) * 0.8));
+                const sampleStep = deconRadius > 3 ? Math.max(1, Math.round(deconRadius / 2)) : 1;
+
+                for (let i = 0; i < data.length; i += 4) {
+                    const idx = i / 4;
+                    const m = blurredData[idx * 4]; // 0..255 (255 = removed)
+                    const alphaFactor = 1 - (m / 255);
+
+                    // Decontaminate color if enabled and semi-transparent
+                    if (decon && alphaFactor > 0 && alphaFactor < 1) {
+                        const x = idx % workW;
+                        const y = Math.floor(idx / workW);
+                        let sr = 0, sg = 0, sb = 0, cnt = 0;
+                        const rrad = Math.min(6, deconRadius);
+
+                        for (let oy = -rrad; oy <= rrad; oy += sampleStep) {
+                            for (let ox = -rrad; ox <= rrad; ox += sampleStep) {
+                                const nx = x + ox;
+                                const ny = y + oy;
+                                if (nx >= 0 && nx < workW && ny >= 0 && ny < workH) {
+                                    const nidx = ny * workW + nx;
+                                    if (!removeMap[nidx]) {
+                                        const ni = nidx * 4;
+                                        sr += originalData[ni];
+                                        sg += originalData[ni + 1];
+                                        sb += originalData[ni + 2];
+                                        cnt++;
+                                    }
                                 }
                             }
                         }
+
+                        if (cnt > 0) {
+                            // Foreground average color
+                            let fr = sr / cnt / 255, fg = sg / cnt / 255, fb = sb / cnt / 255;
+                            let or = originalData[i] / 255, og = originalData[i + 1] / 255, ob = originalData[i + 2] / 255;
+
+                            if (linearBlend) {
+                                // Convert to linear space, blend there, then convert back
+                                fr = sRGBToLinear(fr); fg = sRGBToLinear(fg); fb = sRGBToLinear(fb);
+                                or = sRGBToLinear(or); og = sRGBToLinear(og); ob = sRGBToLinear(ob);
+
+                                const br = or * alphaFactor + fr * (1 - alphaFactor);
+                                const bgc = og * alphaFactor + fg * (1 - alphaFactor);
+                                const bb = ob * alphaFactor + fb * (1 - alphaFactor);
+
+                                // Convert back to sRGB 0..255
+                                data[i]     = Math.round(Math.min(1, linearTosRGB(br)) * 255);
+                                data[i + 1] = Math.round(Math.min(1, linearTosRGB(bgc)) * 255);
+                                data[i + 2] = Math.round(Math.min(1, linearTosRGB(bb)) * 255);
+                            } else {
+                                // Straight blend in sRGB space
+                                fr = Math.round((fr * 255)); fg = Math.round((fg * 255)); fb = Math.round((fb * 255));
+                                const or8 = originalData[i], og8 = originalData[i + 1], ob8 = originalData[i + 2];
+                                data[i]     = Math.round(or8 * alphaFactor + fr * (1 - alphaFactor));
+                                data[i + 1] = Math.round(og8 * alphaFactor + fg * (1 - alphaFactor));
+                                data[i + 2] = Math.round(ob8 * alphaFactor + fb * (1 - alphaFactor));
+                            }
+                        }
                     }
-                    
-                    // Apply gradient transparency on edges
-                    if (nearRemoved && minDist <= edgeSmoothing) {
-                        const alpha = data[i + 3];
-                        const factor = minDist / edgeSmoothing;
-                        data[i + 3] = Math.floor(alpha * factor);
-                    }
+
+                    // Apply new alpha (use original alpha as base)
+                    data[i + 3] = Math.round(originalData[i + 3] * alphaFactor);
+                }
+
+                // Put image data back to working canvas
+                workCtx.putImageData(workImageData, 0, 0);
+
+                // Downscale back to original canvas size and use as the final image
+                const finalCanvas = document.createElement('canvas');
+                finalCanvas.width = removeBgCanvas.width;
+                finalCanvas.height = removeBgCanvas.height;
+                const finalCtx = finalCanvas.getContext('2d');
+                finalCtx.imageSmoothingEnabled = true;
+                finalCtx.imageSmoothingQuality = 'high';
+                if (softEdges && hq) {
+                    finalCtx.filter = 'blur(0.6px)';
+                    finalCtx.drawImage(workCanvas, 0, 0, finalCanvas.width, finalCanvas.height);
+                    finalCtx.filter = 'none';
+                } else {
+                    finalCtx.drawImage(workCanvas, 0, 0, finalCanvas.width, finalCanvas.height);
+                }
+                const finalImageData = finalCtx.getImageData(0, 0, finalCanvas.width, finalCanvas.height);
+                removeBgImageData = new ImageData(new Uint8ClampedArray(finalImageData.data), finalImageData.width, finalImageData.height);
+                removeBgCtx.putImageData(removeBgImageData, 0, 0);
+            } finally {
+                hideSpinner();
+            }
+        }
+
+        function showSpinner() {
+            const o = document.getElementById('processingOverlay'); if (o) o.classList.add('active');
+            document.querySelectorAll('.remove-bg-buttons button, #hqRemove, #decontaminate, #linearBlend, #softEdges, #distanceAA').forEach(b => { if (b) b.disabled = true; });
+        }
+        function hideSpinner() {
+            const o = document.getElementById('processingOverlay'); if (o) o.classList.remove('active');
+            document.querySelectorAll('.remove-bg-buttons button, #hqRemove, #decontaminate, #linearBlend, #softEdges, #distanceAA').forEach(b => { if (b) b.disabled = false; });
+        }
+
+        // Color space helpers: sRGB <-> linear (0..1)
+        function sRGBToLinear(v) {
+            // v in 0..1
+            if (v <= 0.04045) return v / 12.92;
+            return Math.pow((v + 0.055) / 1.055, 2.4);
+        }
+        function linearTosRGB(v) {
+            if (v <= 0.0031308) return v * 12.92;
+            return 1.055 * Math.pow(v, 1 / 2.4) - 0.055;
+        }
+
+        function smoothstepEdge(signed, feather) {
+            if (feather <= 0) return signed < 0 ? 1 : 0;
+            // Map signed in [-feather, +feather] -> t in [1..0] (1 = keep)
+            let t = (feather - signed) / (2 * feather);
+            if (t <= 0) return 0;
+            if (t >= 1) return 1;
+            // Hermite smoothstep
+            return t * t * (3 - 2 * t);
+        }
+
+        // Approximate Euclidean distance transform (2-pass with diagonals)
+        function computeDistanceMap(binary, w, h) {
+            const INF = 1e6;
+            const out = new Float32Array(w * h);
+            const sqrt2 = Math.SQRT2;
+            for (let i = 0; i < w * h; i++) {
+                out[i] = binary[i] ? 0 : INF;
+            }
+
+            // forward pass
+            for (let y = 0; y < h; y++) {
+                for (let x = 0; x < w; x++) {
+                    const idx = y * w + x;
+                    let v = out[idx];
+                    if (x > 0) v = Math.min(v, out[idx - 1] + 1);
+                    if (y > 0) v = Math.min(v, out[idx - w] + 1);
+                    if (x > 0 && y > 0) v = Math.min(v, out[idx - w - 1] + sqrt2);
+                    if (x < w - 1 && y > 0) v = Math.min(v, out[idx - w + 1] + sqrt2);
+                    out[idx] = v;
                 }
             }
-            
-            // Draw updated image
-            removeBgCtx.putImageData(removeBgImageData, 0, 0);
+            // backward pass
+            for (let y = h - 1; y >= 0; y--) {
+                for (let x = w - 1; x >= 0; x--) {
+                    const idx = y * w + x;
+                    let v = out[idx];
+                    if (x < w - 1) v = Math.min(v, out[idx + 1] + 1);
+                    if (y < h - 1) v = Math.min(v, out[idx + w] + 1);
+                    if (x < w - 1 && y < h - 1) v = Math.min(v, out[idx + w + 1] + sqrt2);
+                    if (x > 0 && y < h - 1) v = Math.min(v, out[idx + w - 1] + sqrt2);
+                    out[idx] = v;
+                }
+            }
+            return out;
+        }
+
+        function setPreviewBackground(type) {
+            const wrapper = document.querySelector('.remove-bg-canvas-wrapper');
+            if (!wrapper) return;
+            document.querySelectorAll('.preview-btn').forEach(b => b.classList.remove('active'));
+            if (type === 'light') {
+                wrapper.style.background = '#ffffff';
+                const btn = document.getElementById('previewLightBtn'); if (btn) btn.classList.add('active');
+            } else if (type === 'dark') {
+                wrapper.style.background = '#000000';
+                const btn = document.getElementById('previewDarkBtn'); if (btn) btn.classList.add('active');
+            } else {
+                wrapper.style.background = 'repeating-conic-gradient(#eee 0% 25%, #ddd 0% 50%) 0% / 24px 24px';
+                const btn = document.getElementById('previewCheckerBtn'); if (btn) btn.classList.add('active');
+            }
         }
 
         function resetRemoveBackground() {
             if (!originalImageData) return;
             
-            selectedColor = null;
+            selectedColors = [];
+            activeColorIndex = -1;
+            renderColorChips();
             removeBgImageData = new ImageData(
                 new Uint8ClampedArray(originalImageData.data),
                 originalImageData.width,
@@ -1749,6 +2216,12 @@ XONG! Logo Android mới đã được cập nhật.`);
             document.getElementById('edgeSmoothingValue').textContent = '2';
             document.getElementById('borderCleanupRange').value = 1;
             document.getElementById('borderCleanupValue').textContent = '1';
+            if (document.getElementById('hqRemove')) document.getElementById('hqRemove').checked = false;
+            if (document.getElementById('decontaminate')) document.getElementById('decontaminate').checked = false;
+            if (document.getElementById('distanceAA')) document.getElementById('distanceAA').checked = true;
+            if (document.getElementById('linearBlend')) document.getElementById('linearBlend').checked = true;
+            if (document.getElementById('softEdges')) document.getElementById('softEdges').checked = true;
+            setPreviewBackground('light');
         }
 
         function applyRemoveBackground() {
@@ -1767,6 +2240,8 @@ XONG! Logo Android mới đã được cập nhật.`);
             img.onload = () => {
                 currentImage = img;
                 document.getElementById('currentImage').src = img.src;
+                // Update modal thumbnail too
+                const thumb = document.getElementById('removePreviewThumb'); if (thumb) { thumb.src = img.src; }
                 generatePreviews();
                 closeRemoveBgModal();
             };
