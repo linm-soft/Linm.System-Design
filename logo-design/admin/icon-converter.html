@@ -669,7 +669,27 @@
                 <div class="control-group">
                     <div class="checkbox-group">
                         <input type="checkbox" id="skipXml" checked>
-                        <label for="skipXml" style="margin: 0;">Skip XML (export PNGs only)</label>
+                        <label for="skipXml" style="margin: 0;">Skip additional XML wrappers (default)</label>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="useRoundIcon">
+                        </div>
+                        <div style="flex:1;">
+                            <label for="useRoundIcon" style="margin: 0;">Enable separate Round icon</label>
+                            <div style="font-size:0.85em; color:#666;">Upload/edit a separate icon used for round launcher (optional)</div>
+                        </div>
+                        <div style="margin-left:8px;">
+                            <input type="file" id="roundFileInput" accept="image/*" style="display:none">
+                            <button type="button" onclick="document.getElementById('roundFileInput').click()">📤 Upload Round Icon</button>
+                        </div>
+                    </div>
+                    <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
+                        <img id="roundIconThumb" src="" alt="Round icon preview" style="width:56px; height:56px; object-fit:contain; display:none; border-radius:8px; border:1px solid #e0e0e0; background:#fff"/>
+                        <div style="font-size:0.85em; color:#666;">Preview (round)</div>
                     </div>
                 </div>
 
@@ -936,8 +956,9 @@
         ];
 
         let currentImage = null;
-        let canvases = {};
-        let removeBgCanvas = null;
+let currentRoundImage = null;
+let canvases = {};
+let canvasesRound = {};
         let removeBgCtx = null;
         let removeBgImageData = null;
         let originalImageData = null;
@@ -978,6 +999,29 @@
                 loadImage(file);
             }
         });
+
+        // Round icon upload handling
+        const roundFileInput = document.getElementById('roundFileInput');
+        if (roundFileInput) {
+            roundFileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) loadRoundImage(file);
+            });
+        }
+
+        function loadRoundImage(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    currentRoundImage = img;
+                    const thumb = document.getElementById('roundIconThumb'); if (thumb) { thumb.src = e.target.result; thumb.style.display = 'block'; }
+                    generatePreviews();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
 
         function loadImage(file) {
             const reader = new FileReader();
@@ -1080,17 +1124,26 @@
             const androidGrid = document.getElementById('androidPreviewGrid');
             androidGrid.innerHTML = '';
             canvases.android = {};
+            canvasesRound = {};
             
             androidSizes.filter(config => config.preview).forEach(config => {
                 const previewItem = document.createElement('div');
                 previewItem.className = 'preview-item';
                 previewItem.innerHTML = `
                     <h3>${config.name}</h3>
-                    <div class="icon-wrapper" style="background: #e0e0e0;">
+                    <div style="display:flex; gap:8px; align-items:center; justify-content:center;">
+                      <div class="icon-wrapper" style="background: #e0e0e0;">
                         <canvas id="android-${config.size}" 
                                 width="${config.size}" 
                                 height="${config.size}"
                                 style="width: ${config.displaySize}px; height: ${config.displaySize}px;"></canvas>
+                      </div>
+                      <div class="icon-wrapper" style="background: #e0e0e0;">
+                        <canvas id="android-round-${config.size}" 
+                                width="${config.size}" 
+                                height="${config.size}"
+                                style="width: ${config.displaySize}px; height: ${config.displaySize}px;"></canvas>
+                      </div>
                     </div>
                     <div style="font-size: 0.8em; color: #999; margin-top: 5px;">${config.folder === 'playstore' ? 'Play Store' : config.folder.replace('mipmap-', '').toUpperCase()}</div>
                 `;
@@ -1098,8 +1151,12 @@
                 
                 const canvas = document.getElementById(`android-${config.size}`);
                 canvases.android[config.size] = canvas;
+                const roundCanvas = document.getElementById(`android-round-${config.size}`);
+                canvasesRound[config.size] = roundCanvas;
                 const applyRadius = document.getElementById('applyRadiusToAndroid').checked;
                 drawIcon(canvas, config.size, applyRadius);
+                // draw round icon (use separate image if uploaded, otherwise fallback to main)
+                drawIconRound(roundCanvas, config.size, applyRadius);
             });
             
             // Also generate non-preview canvases for export (hidden)
@@ -1109,8 +1166,14 @@
                 canvas.height = config.size;
                 canvas.id = `android-${config.size}`;
                 canvases.android[config.size] = canvas;
+                const roundCanvas = document.createElement('canvas');
+                roundCanvas.width = config.size;
+                roundCanvas.height = config.size;
+                roundCanvas.id = `android-round-${config.size}`;
+                canvasesRound[config.size] = roundCanvas;
                 const applyRadius = document.getElementById('applyRadiusToAndroid').checked;
                 drawIcon(canvas, config.size, applyRadius);
+                drawIconRound(roundCanvas, config.size, applyRadius);
             });
         }
 
@@ -1180,6 +1243,52 @@
             }
             
             ctx.drawImage(currentImage, sx, sy, sw, sh, dx, dy, dw, dh);
+            ctx.restore();
+        }
+
+        function drawIconRound(canvas, size, applyCornerRadius = true, forceRadius = null) {
+            const ctx = canvas.getContext('2d');
+            const padding = parseInt(document.getElementById('padding').value);
+            const cornerRadiusPercent = forceRadius !== null ? forceRadius : parseInt(document.getElementById('cornerRadius').value);
+            const transparentBg = document.getElementById('transparentBg').checked;
+            const bgColor = document.getElementById('bgColor').value;
+            const imageFit = document.getElementById('imageFit').value;
+            const srcImage = currentRoundImage || currentImage;
+
+            if (!srcImage) return;
+
+            // Clear canvas
+            ctx.clearRect(0, 0, size, size);
+
+            // Draw background
+            if (!transparentBg) {
+                ctx.fillStyle = bgColor;
+                ctx.fillRect(0, 0, size, size);
+            }
+
+            // Clip to a circle to preview round appearance
+            ctx.save();
+            const radius = size / 2;
+            ctx.beginPath(); ctx.arc(radius, radius, radius, 0, Math.PI * 2); ctx.closePath(); ctx.clip();
+
+            // Draw image within padded area
+            const drawSize = size - (padding * 2);
+            let sx = 0, sy = 0, sw = srcImage.width, sh = srcImage.height;
+            let dx = padding, dy = padding, dw = drawSize, dh = drawSize;
+
+            if (imageFit === 'contain') {
+                const imgRatio = srcImage.width / srcImage.height;
+                const canvasRatio = drawSize / drawSize;
+                if (imgRatio > canvasRatio) { dh = drawSize / imgRatio; dy = padding + (drawSize - dh) / 2; }
+                else { dw = drawSize * imgRatio; dx = padding + (drawSize - dw) / 2; }
+            } else if (imageFit === 'cover') {
+                const imgRatio = srcImage.width / srcImage.height;
+                const canvasRatio = drawSize / drawSize;
+                if (imgRatio > canvasRatio) { sw = srcImage.height; sx = (srcImage.width - sw) / 2; }
+                else { sh = srcImage.width; sy = (srcImage.height - sh) / 2; }
+            }
+
+            ctx.drawImage(srcImage, sx, sy, sw, sh, dx, dy, dw, dh);
             ctx.restore();
         }
 
@@ -1517,7 +1626,17 @@ XONG! Logo iOS mới đã được cập nhật.`);
                 highResCanvas = tempCanvas;
             }
 
-            // Create density PNGs by downscaling from high-res source
+// Create density PNGs by downscaling from high-res source (and round high-res if available)
+            const useRoundIcon = document.getElementById('useRoundIcon') && document.getElementById('useRoundIcon').checked;
+            let highResRoundCanvas = highResCanvas;
+            if (useRoundIcon && currentRoundImage) {
+                const tempRound = document.createElement('canvas');
+                tempRound.width = tempRound.height = HIGH_RES;
+                const applyRadius = document.getElementById('applyRadiusToAndroid').checked;
+                drawIconRound(tempRound, HIGH_RES, applyRadius);
+                highResRoundCanvas = tempRound;
+            }
+
             for (const cfg of androidSizes) {
                 if (cfg.folder === 'playstore') {
                     // Play Store requires 512x512 (top-level)
@@ -1533,6 +1652,8 @@ XONG! Logo iOS mới đã được cập nhật.`);
                 }
 
                 const targetSize = cfg.size;
+
+                // regular icon
                 const out = document.createElement('canvas');
                 out.width = out.height = targetSize;
                 const octx = out.getContext('2d');
@@ -1540,10 +1661,17 @@ XONG! Logo iOS mới đã được cập nhật.`);
                 octx.imageSmoothingQuality = 'high';
                 octx.drawImage(highResCanvas, 0, 0, HIGH_RES, HIGH_RES, 0, 0, targetSize, targetSize);
                 const blob = await new Promise(resolve => out.toBlob(resolve, 'image/png'));
-
-                // place density PNGs under res/mipmap-*
                 zip.folder('res').folder(cfg.folder).file('ic_launcher.png', blob);
-                zip.folder('res').folder(cfg.folder).file('ic_launcher_round.png', blob);
+
+                // round icon (from separate source if provided)
+                const outR = document.createElement('canvas');
+                outR.width = outR.height = targetSize;
+                const octxR = outR.getContext('2d');
+                octxR.imageSmoothingEnabled = true;
+                octxR.imageSmoothingQuality = 'high';
+                octxR.drawImage(highResRoundCanvas, 0, 0, HIGH_RES, HIGH_RES, 0, 0, targetSize, targetSize);
+                const blobR = await new Promise(resolve => outR.toBlob(resolve, 'image/png'));
+                zip.folder('res').folder(cfg.folder).file('ic_launcher_round.png', blobR);
             }
 
             // --- Adaptive icon (Android 8+) ---
@@ -1552,9 +1680,6 @@ XONG! Logo iOS mới đã được cập nhật.`);
             let srcCanvas = highResCanvas; // use the 432x432 source created above
 
             if (srcCanvas) {
-                // Check whether user wants to skip XML files (default: checked)
-                const skipXml = document.getElementById('skipXml') && document.getElementById('skipXml').checked;
-
                 // --- Generate foreground using safe zone (inset) so important content isn't clipped by masks ---
                 const size = srcCanvas.width; // square canvases (should be HIGH_RES)
 
@@ -1602,58 +1727,68 @@ XONG! Logo iOS mới đã được cập nhật.`);
                             `</shape>`;
                 }
 
-                // Branch behavior based on 'Skip XML' checkbox (default: checked)
-                if (skipXml) {
-                    // Write inset foreground bitmap and a drawable fallback PNG (no XML files)
-                    zip.folder('res').folder('drawable').file('ic_launcher_foreground.png', fgBlob);
-                    zip.folder('res').folder('drawable').file('ic_launcher.png', fgBlob);
+                // Create drawables (PNG) for background and foreground (regular + round)
 
-                    // Also write Play Store PNG (512x512) at top-level
-                    const fullBlob = await new Promise(resolve => srcCanvas.toBlob(resolve, 'image/png'));
-                    zip.folder('playstore').file('ic_launcher-playstore.png', fullBlob);
+                // Build round foreground from round source (or fallback to main)
+                const useRoundIcon = document.getElementById('useRoundIcon') && document.getElementById('useRoundIcon').checked;
+                const roundSrc = (useRoundIcon && currentRoundImage) ? highResRoundCanvas : srcCanvas;
+
+                const fgInsetRoundCanvas = document.createElement('canvas');
+                fgInsetRoundCanvas.width = size;
+                fgInsetRoundCanvas.height = size;
+                const fgRoundCtx = fgInsetRoundCanvas.getContext('2d');
+                fgRoundCtx.clearRect(0, 0, size, size);
+                fgRoundCtx.drawImage(roundSrc, 0, 0, size, size, offset, offset, target, target);
+                const fgRoundBlob = await new Promise(resolve => fgInsetRoundCanvas.toBlob(resolve, 'image/png'));
+
+                // Create background PNGs (solid or transparent)
+                const bgCanvas = document.createElement('canvas');
+                bgCanvas.width = bgCanvas.height = size;
+                const bgCtx = bgCanvas.getContext('2d');
+                if (transparentBgChecked) {
+                    bgCtx.clearRect(0, 0, size, size);
                 } else {
-                    // Write background XML (shape/gradient or transparent)
-                    zip.folder('res').folder('drawable').file('ic_launcher_background.xml', bgXml);
-
-                    // write the inset foreground bitmap PNG (used by the XML wrapper)
-                    zip.folder('res').folder('drawable').file('ic_launcher_foreground.png', fgBlob);
-
-                    // Create XML bitmap wrapper for foreground.
-                    const fgBitmapSrc = '@drawable/ic_launcher_foreground';
-                    const fgBitmapXML = `<?xml version="1.0" encoding="utf-8"?>\n` +
-                        `<bitmap xmlns:android="http://schemas.android.com/apk/res/android"\n` +
-                        `    android:src="${fgBitmapSrc}"\n` +
-                        `    android:antialias="true"\n` +
-                        `    android:filter="true"\n` +
-                        `    android:gravity="center" />`;
-
-                    zip.folder('res').folder('drawable').file('ic_launcher_foreground.xml', fgBitmapXML);
-
-                    // Adaptive icon XML (references the XML background/foreground)
-                    const launcherXML = `<?xml version="1.0" encoding="utf-8"?>\n` +
-                        `<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\n` +
-                        `    <background android:drawable="@drawable/ic_launcher_background"/>\n` +
-                        `    <foreground android:drawable="@drawable/ic_launcher_foreground"/>\n` +
-                        `</adaptive-icon>`;
-
-                    zip.folder('res').folder('mipmap-anydpi-v26').file('ic_launcher.xml', launcherXML);
-                    zip.folder('res').folder('mipmap-anydpi-v26').file('ic_launcher_round.xml', launcherXML);
-
-                    // Also write Play Store PNG (512x512) at top-level
-                    const fullBlob = await new Promise(resolve => srcCanvas.toBlob(resolve, 'image/png'));
-                    zip.folder('playstore').file('ic_launcher-playstore.png', fullBlob);
+                    bgCtx.fillStyle = bgColor;
+                    bgCtx.fillRect(0, 0, size, size);
                 }
+                const bgBlob = await new Promise(resolve => bgCanvas.toBlob(resolve, 'image/png'));
 
-                // Adaptive icon XML (references the XML background/foreground)
+                const bgRoundCanvas = document.createElement('canvas');
+                bgRoundCanvas.width = bgRoundCanvas.height = size;
+                const bgRoundCtx = bgRoundCanvas.getContext('2d');
+                if (transparentBgChecked) {
+                    bgRoundCtx.clearRect(0, 0, size, size);
+                } else {
+                    bgRoundCtx.fillStyle = bgColor;
+                    bgRoundCtx.fillRect(0, 0, size, size);
+                }
+                const bgRoundBlob = await new Promise(resolve => bgRoundCanvas.toBlob(resolve, 'image/png'));
+
+                // Write drawable PNGs (regular + round)
+                zip.folder('res').folder('drawable').file('ic_launcher_foreground.png', fgBlob);
+                zip.folder('res').folder('drawable').file('ic_launcher_background.png', bgBlob);
+                zip.folder('res').folder('drawable').file('ic_launcher_foreground_round.png', fgRoundBlob);
+                zip.folder('res').folder('drawable').file('ic_launcher_background_round.png', bgRoundBlob);
+
+                // Create adaptive icon XMLs (v26) that reference drawable PNGs
                 const launcherXML = `<?xml version="1.0" encoding="utf-8"?>\n` +
                     `<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\n` +
                     `    <background android:drawable="@drawable/ic_launcher_background"/>\n` +
                     `    <foreground android:drawable="@drawable/ic_launcher_foreground"/>\n` +
                     `</adaptive-icon>`;
 
-                // Add adaptive icon XML for regular and round (under res/mipmap-anydpi-v26)
+                const launcherRoundXML = `<?xml version="1.0" encoding="utf-8"?>\n` +
+                    `<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\n` +
+                    `    <background android:drawable="@drawable/ic_launcher_background_round"/>\n` +
+                    `    <foreground android:drawable="@drawable/ic_launcher_foreground_round"/>\n` +
+                    `</adaptive-icon>`;
+
                 zip.folder('res').folder('mipmap-anydpi-v26').file('ic_launcher.xml', launcherXML);
-                zip.folder('res').folder('mipmap-anydpi-v26').file('ic_launcher_round.xml', launcherXML);
+                zip.folder('res').folder('mipmap-anydpi-v26').file('ic_launcher_round.xml', launcherRoundXML);
+
+                // Also write Play Store PNG (512x512) at top-level
+                const fullBlob = await new Promise(resolve => srcCanvas.toBlob(resolve, 'image/png'));
+                zip.folder('playstore').file('ic_launcher-playstore.png', fullBlob);
             }
 
             const content = await zip.generateAsync({ type: 'blob' });
@@ -1682,9 +1817,12 @@ HƯỚNG DẪN SỬ DỤNG ANDROID:
 
 Bao gồm:
 - res/mipmap-mdpi ... mipmap-xxxhdpi (ic_launcher.png / ic_launcher_round.png)
+- res/drawable/ic_launcher_background.png, res/drawable/ic_launcher_foreground.png
+- res/drawable/ic_launcher_background_round.png, res/drawable/ic_launcher_foreground_round.png
+- res/mipmap-anydpi-v26/ic_launcher.xml, res/mipmap-anydpi-v26/ic_launcher_round.xml (adaptive XML referencing drawables)
 - playstore/ic_launcher-playstore.png (512x512) — upload to Play Console
 
-Lưu ý: Mặc định 'Skip XML' được bật — các file XML adaptive và drawable sẽ **không** được xuất. Nếu bạn muốn xuất XML (adaptive icon, background/foreground XML), hãy bỏ chọn 'Skip XML' trước khi Export.
+Lưu ý: **Adaptive XML (v26)** ('res/mipmap-anydpi-v26/ic_launcher.xml' và 'ic_launcher_round.xml') **luôn** được tạo và tham chiếu tới PNG trong 'res/drawable'. Tuỳ chọn **"Skip additional XML"** (mặc định bật) chỉ ngăn việc tạo các XML wrapper/shape phụ trợ; nếu bạn cần các XML wrapper (ví dụ bitmap wrapper hoặc shape background), bỏ chọn tuỳ chọn đó trước khi Export.
 
 XONG! Logo Android đã được xuất đúng định dạng.`);
             }, 500);
@@ -1727,6 +1865,14 @@ XONG! Logo Android đã được xuất đúng định dạng.`);
         document.getElementById('applyRadiusToAndroid').addEventListener('change', () => {
             if (currentImage) generatePreviews();
         });
+
+        // Update round icon setting
+        const useRoundIconEl = document.getElementById('useRoundIcon');
+        if (useRoundIconEl) {
+            useRoundIconEl.addEventListener('change', () => {
+                if (currentImage) generatePreviews();
+            });
+        }
 
         // Background removal functionality (Manual)
         function openRemoveBgModal() {
