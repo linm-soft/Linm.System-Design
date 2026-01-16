@@ -1741,7 +1741,7 @@ XONG! Logo iOS mới đã được cập nhật.`);
                 fgRoundCtx.drawImage(roundSrc, 0, 0, size, size, offset, offset, target, target);
                 const fgRoundBlob = await new Promise(resolve => fgInsetRoundCanvas.toBlob(resolve, 'image/png'));
 
-                // Create background PNGs (solid or transparent)
+                // Create background PNG (solid or transparent)
                 const bgCanvas = document.createElement('canvas');
                 bgCanvas.width = bgCanvas.height = size;
                 const bgCtx = bgCanvas.getContext('2d');
@@ -1753,22 +1753,36 @@ XONG! Logo iOS mới đã được cập nhật.`);
                 }
                 const bgBlob = await new Promise(resolve => bgCanvas.toBlob(resolve, 'image/png'));
 
-                const bgRoundCanvas = document.createElement('canvas');
-                bgRoundCanvas.width = bgRoundCanvas.height = size;
-                const bgRoundCtx = bgRoundCanvas.getContext('2d');
-                if (transparentBgChecked) {
-                    bgRoundCtx.clearRect(0, 0, size, size);
-                } else {
-                    bgRoundCtx.fillStyle = bgColor;
-                    bgRoundCtx.fillRect(0, 0, size, size);
-                }
-                const bgRoundBlob = await new Promise(resolve => bgRoundCanvas.toBlob(resolve, 'image/png'));
+                // For background drawables, always use a fixed vector XML per user request
+                const icLauncherBackgroundXml = `<?xml version="1.0" encoding="utf-8"?>\n` +
+`<vector xmlns:android="http://schemas.android.com/apk/res/android"\n` +
+`    android:width="108dp"\n` +
+`    android:height="108dp"\n` +
+`    android:viewportWidth="108"\n` +
+`    android:viewportHeight="108">\n` +
+`    <path\n` +
+`        android:fillColor="#FFFFFF"\n` +
+`        android:pathData="M0,0h108v108h-108z" />\n` +
+`</vector>`;
+
+                const icLauncherBackgroundRoundXml = `<?xml version="1.0" encoding="utf-8"?>\n` +
+`<vector xmlns:android="http://schemas.android.com/apk/res/android"\n` +
+`    android:width="108dp"\n` +
+`    android:height="108dp"\n` +
+`    android:viewportWidth="108"\n` +
+`    android:viewportHeight="108">\n` +
+`    <path\n` +
+`        android:fillColor="#FFFFFF"\n` +
+`        android:pathData="M0,0h108v108h-108z" />\n` +
+`</vector>`;
 
                 // Write drawable PNGs (regular + round)
                 zip.folder('res').folder('drawable').file('ic_launcher_foreground.png', fgBlob);
-                zip.folder('res').folder('drawable').file('ic_launcher_background.png', bgBlob);
+                // Write XML vector for background instead of PNG (always)
+                zip.folder('res').folder('drawable').file('ic_launcher_background.xml', icLauncherBackgroundXml);
                 zip.folder('res').folder('drawable').file('ic_launcher_foreground_round.png', fgRoundBlob);
-                zip.folder('res').folder('drawable').file('ic_launcher_background_round.png', bgRoundBlob);
+                // Write XML vector for round background instead of PNG (always)
+                zip.folder('res').folder('drawable').file('ic_launcher_background_round.xml', icLauncherBackgroundRoundXml);
 
                 // Create adaptive icon XMLs (v26) that reference drawable PNGs
                 const launcherXML = `<?xml version="1.0" encoding="utf-8"?>\n` +
@@ -1817,8 +1831,8 @@ HƯỚNG DẪN SỬ DỤNG ANDROID:
 
 Bao gồm:
 - res/mipmap-mdpi ... mipmap-xxxhdpi (ic_launcher.png / ic_launcher_round.png)
-- res/drawable/ic_launcher_background.png, res/drawable/ic_launcher_foreground.png
-- res/drawable/ic_launcher_background_round.png, res/drawable/ic_launcher_foreground_round.png
+- res/drawable/ic_launcher_background.xml, res/drawable/ic_launcher_foreground.png
+- res/drawable/ic_launcher_background_round.xml, res/drawable/ic_launcher_foreground_round.png
 - res/mipmap-anydpi-v26/ic_launcher.xml, res/mipmap-anydpi-v26/ic_launcher_round.xml (adaptive XML referencing drawables)
 - playstore/ic_launcher-playstore.png (512x512) — upload to Play Console
 
